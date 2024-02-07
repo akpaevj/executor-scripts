@@ -14,19 +14,6 @@ method Script(
     val installedPlatform = V8Util.GetInstalledPlatform(PlatfromVersion)
 
     for i in Infobases.Split(",")
-        Console.Write("Processing \"${i}\"")
-
-        Console.Write("Blocking connections")
-
-        Ras.BlockConnections(
-            i,
-            User,
-            Password,
-            AccessCode,
-            Server)
-
-        Console.Write("Updating infobase")
-
         BatchMode.UpdateConfiguration(
             installedPlatform,
             Server,
@@ -35,15 +22,5 @@ method Script(
             Password,
             AccessCode,
             CfuPath)
-
-        Console.Write("Unblocking connections")
-
-        Ras.UnblockConnections(
-            i,
-            User,
-            Password,
-            Server)
-
-        Console.Write("Processing is finished")
     ;
 ;

@@ -36,6 +36,57 @@ method UpdateConfiguration(
     var ExitCode = Process.GetExitCode()
     if ExitCode > 0
         Console.WriteError("Failed to update infobase (${ExitCode})")
+    else
+        Console.Write("${Infobase} is successfully updated")
+    ;
+
+    use OutputStream = OutFile.OpenReadableStream()
+    val OutputStreamText = OutputStream.ReadAsString()
+    if (OutputStreamText.Length() > 0)
+        Console.Write(OutputStreamText)
+    ;
+
+    return Process.GetExitCode()
+;
+
+@Global
+method UpdateExtension(
+    Platform: V8Util.V8Platform,
+    Server: String,
+    Infobase: String,
+    User: String,
+    Password: String,
+    AccessCode: String,
+    ExtensionName: String,
+    ExtensionFolder: String): Number
+    val OutFile = Files.CreateTempFile()
+
+    val args = [
+        "DESIGNER",
+        "/S${Server}\\${Infobase}",
+        "/N${User}",
+        "/P${Password}",
+        "/DisableStartupMessages",
+        "/DisableStartupDialogs",
+        "/Out\"${OutFile}\"",
+        "/UC${AccessCode}",
+        "/LoadConfigFromFiles\"${ExtensionFolder}\"",
+        "-Extension\"${ExtensionName}\"",
+        "/UpdateDBCfg",
+        "-Dynamic-",
+        "-Server",
+        "-SessionTerminate force"
+    ]
+    val Process = new OsProcess(Platform.ExecutablePath, args, True)
+    Process.Start()
+    ProcessHelper.WaitForCompletionAndReadOutput(Process)
+    Process.Stop()
+
+    var ExitCode = Process.GetExitCode()
+    if ExitCode > 0
+        Console.WriteError("Failed to update extension ${ExtensionName} in ${Infobase}")
+    else
+        Console.Write("Extension \"${ExtensionName}\" in ${Infobase} is successfully updated")
     ;
 
     use OutputStream = OutFile.OpenReadableStream()
