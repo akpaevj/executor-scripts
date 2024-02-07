@@ -58,7 +58,7 @@ method UpdateExtension(
     Password: String,
     AccessCode: String,
     ExtensionName: String,
-    ExtensionFolder: String): Number
+    ExtensionArchive: String): Number
     val OutFile = Files.CreateTempFile()
 
     val args = [
@@ -70,8 +70,9 @@ method UpdateExtension(
         "/DisableStartupDialogs",
         "/Out\"${OutFile}\"",
         "/UC${AccessCode}",
-        "/LoadConfigFromFiles\"${ExtensionFolder}\"",
+        "/LoadConfigFromFiles\"${ExtensionArchive}\"",
         "-Extension\"${ExtensionName}\"",
+        "-NoCheck",
         "/UpdateDBCfg",
         "-Dynamic-",
         "-Server",

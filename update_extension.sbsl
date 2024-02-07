@@ -9,7 +9,7 @@ method Script(
     Password: String,
     AccessCode: String,
     ExtensionName: String,
-    ExtensionFolder: String,
+    ExtensionArchive: String,
     PlatfromVersion = "")
 
     val installedPlatform = V8Util.GetInstalledPlatform(PlatfromVersion)
@@ -23,6 +23,6 @@ method Script(
             Password,
             AccessCode,
             ExtensionName,
-            ExtensionFolder)
+            ExtensionArchive)
     ;
 ;

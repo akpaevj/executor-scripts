@@ -15,9 +15,19 @@
                 "Администратор",
                 "zNrtZ5jb",
                 "12345",
-                "C:\\Users\\akpaev.e\\AppData\\Roaming\\1C\\1cv8\\tmplts\\1c\\Enterprise20\\2_5_15_65\\1cv8.cfu",
+                "Итекма_Адаптация",
+                "C:\\erp-main-extension-feature_adaptation_for_realease_2_5_15_65",
                 "8.3.23.2040"
             ]
+            // "args": [
+            //     "localhost",
+            //     "erp_tehnogerm_test_update",
+            //     "Администратор",
+            //     "zNrtZ5jb",
+            //     "12345",
+            //     "C:\\Users\\akpaev.e\\AppData\\Roaming\\1C\\1cv8\\tmplts\\1c\\Enterprise20\\2_5_15_65\\1cv8.cfu",
+            //     "8.3.23.2040"
+            // ]
             // "args": [
             //     "C:\\Users\\akpaev.e\\git\\erp-main-extension.zip",
             //     "localhost",
@@ -33,7 +43,7 @@
             // ]
             // "args": [
             //     "C:\\Users\\akpaev.e\\AppData\\Local\\1C\\1cedtstart\\installations\\1C_EDT 2023.3_\\1cedt\\1cedtcli.exe",
-            //     "C:\\Users\\akpaev.e\\git\\erp-main-extension"
+            //     "C:\\Users\\akpaev.e\\Downloads\\erp-main-extension-feature_adaptation_for_realease_2_5_15_65"
             // ]
         }
     ]
