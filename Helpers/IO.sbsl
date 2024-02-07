@@ -1,0 +1,52 @@
+@Global
+method JoinPath(path: String, path1: String): String
+    if path.EndsWith("\\") or path.EndsWith("//")
+        return path + path1
+    else
+        return path + Files.SeparatorSymbol + path1
+    ;
+;
+
+@Global
+method JoinPath(path: String, path1: String, path2: String): String
+    val result = JoinPath(path, path1)
+    return JoinPath(result, path2)
+;
+
+@Global
+method JoinPath(path: String, path1: String, path2: String, path3: String): String
+    val result = JoinPath(path, path1, path2)
+    return JoinPath(result, path3)
+;
+
+@Global
+method PathExists(path: String): Boolean
+    return new File(path).Exists()
+;
+
+@Global
+method TempPath(): String
+    return ExecutionEnvironment.GetProperty("java.io.tmpdir")    
+;
+
+@Global
+method ZipFolder(Folder: File, ArchivePath: String)
+    val ArchiveFile = new File(ArchivePath)
+    var Writer = new ZipWriter(ArchiveFile.OpenWritableStream())
+
+    for F in Folder.Children
+        AddToZipArchive(Writer, F, Folder)
+    ;
+
+    Writer.Write()
+;
+
+method AddToZipArchive(Writer: ZipWriter, Source: File, Folder: File)
+    if Source.IsFile()
+        Writer.Add(Source.OpenReadableStream(), Source.Path.Replace(Folder.Path, ""))
+    ;
+
+    for F in Source.Children
+        AddToZipArchive(Writer, F, Folder)
+    ;
+;

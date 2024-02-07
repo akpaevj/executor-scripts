@@ -1,0 +1,43 @@
+#required Helpers/V8Util.sbsl
+
+method Script(
+    CliPath: String,
+    ProjectPath: String): Number
+
+    if not IO.PathExists(CliPath)
+        Console.WriteError("Couldn't find edt cli executable by passed path")
+        return 1
+    ;
+
+    if not IO.PathExists(ProjectPath)
+        Console.WriteError("Couldn't find project folder by passed path")
+        return 1
+    ;
+
+    val DataPath = Files.CreateTempDirectory()
+    val BuildPath = Files.CreateTempDirectory()
+
+    val args = [
+        "-data",
+        DataPath,
+        "-command",
+        "export",
+        "--project",
+        ProjectPath,
+        "--configuration-files",
+        BuildPath
+    ]
+
+    val edtCli = new OsProcess(CliPath, args, True)
+    edtCli.Start()
+    edtCli.WaitForCompletion()
+
+    Files.Delete(DataPath)
+
+    val ArchivePath = IO.JoinPath(new File(ProjectPath).Directory.Path, "${new File(ProjectPath).Name}.zip")
+    IO.ZipFolder(BuildPath, ArchivePath)
+
+    Files.Delete(BuildPath)
+
+    return edtCli.GetExitCode()
+;

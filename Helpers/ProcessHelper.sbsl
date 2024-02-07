@@ -1,0 +1,18 @@
+@Global
+method WaitForCompletionAndReadOutput(Process: OsProcess): Boolean
+    use ProcessOutputStream = Process.GetOutputStream()
+
+    while True
+        val ProcessOutputText = ProcessOutputStream.ReadAsString()
+
+        if (ProcessOutputText.Length() > 0)
+            Console.Write(ProcessOutputText)
+        ;
+
+        if not Process.IsAlive()
+            break
+        ;     
+    ;
+
+    return Process.WaitForCompletion()
+;

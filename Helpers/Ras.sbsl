@@ -1,0 +1,59 @@
+@Global
+method BlockConnections(
+    Infobase: String,
+    User: String,
+    Password: String,
+    AccessCode: String,
+    RasAddress = "localhost",
+    RasPort = 1545)
+    use administration = new V8ServerAdministration(RasAddress, RasPort)
+    administration.Authenticate()
+
+    val cluster = administration.GetClusters().FirstOrDefault()
+    cluster.Authenticate()
+
+    val infobaseDescription = cluster.GetInfobases().Filter(c -> c.Name.ToLowerCase() == Infobase.Trim().ToLowerCase()).FirstOrDefault()
+    val ib = infobaseDescription.Authenticate(User, Password)
+    
+    val beginTimestamp = DateTime.Now()
+    ib.LockBeginTime = beginTimestamp.ToInstant(TimeZone.Current())
+
+    ib.LockMessage = "Технические работы"
+    ib.SessionStartPermissionCode = AccessCode
+    ib.LockScheduledJobs = True
+    ib.SessionsLockEnabled = True
+    ib.Write()
+
+    ib.GetConnections()
+        .Filter(c -> c.ApplicationName.ToUpperCase() != "RAS")
+        .ForEach(c -> CloseConnection(c)) 
+;
+
+method CloseConnection(Connection: V8Connection)
+    try 
+        Connection.Disconnect()
+    catch Exception: unknown
+        
+    ;
+;
+
+@Global
+method UnblockConnections(
+    Infobase: String,
+    User: String,
+    Password: String,
+    RasAddress = "localhost",
+    RasPort = 1545)
+    use administration = new V8ServerAdministration(RasAddress, RasPort)
+    administration.Authenticate()
+
+    val cluster = administration.GetClusters().FirstOrDefault()
+    cluster.Authenticate()
+
+    val infobaseDescription = cluster.GetInfobases().Filter(c -> c.Name.ToLowerCase() == Infobase.Trim().ToLowerCase()).FirstOrDefault()
+    val ib = infobaseDescription.Authenticate(User, Password)
+
+    ib.LockScheduledJobs = False
+    ib.SessionsLockEnabled = False
+    ib.Write()  
+;

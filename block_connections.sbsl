@@ -1,0 +1,27 @@
+#required Helpers/Ras.sbsl
+
+method Script(
+    Infobases: String,
+    User: String,
+    Password: String,
+    AccessPort: String,
+    RasAddress = "localhost",
+    RasPort = 1545): Number
+
+    for i in Infobases.Split(",")
+        try 
+            Ras.BlockConnections(
+                i,
+                User,
+                Password,
+                AccessPort,
+                RasAddress,
+                RasPort)
+                Console.Write("Connections to ${i} are successfully blocked and terminated")
+        catch Exception: unknown
+            Console.WriteError("Failed to block connections to ${i}")
+        ;
+    ;
+
+    return 0
+;

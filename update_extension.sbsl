@@ -1,0 +1,38 @@
+#required Helpers/V8Util.sbsl
+#required Helpers/SshAgentConnection.sbsl
+
+method Script(
+    ExtensionArchivePath: String,
+    Server: String,
+    Infobases: String,
+    User: String,
+    Password: String,
+    PlatfromVersion = "")
+    val installedPlatform = PlatfromVersion == "" ? V8Util.GetHighestInstalledPlatform() : V8Util.GetInstalledPlatform("8.3.23.2040")
+
+    var startPort = 10000
+
+    for i in Infobases.Split(",")    
+        val agentBaseDir = Files.CreateTempDirectory()
+
+        val agentProcess = V8Util.StartSshAgent(
+            installedPlatform,
+            Server,
+            i,
+            agentBaseDir,
+            startPort
+        )
+
+        V8Util.WaitSshAgentIsStarted(startPort, 10)
+
+        // SshAgentConnection.LoadExtensionFiles("localhost", startPort, User, Password, ExtensionArchivePath)
+
+        use connection = SshAgentConnection.Open("localhost", startPort, User, Password)
+        SshAgentConnection.ConnectIB(connection)
+
+        SshAgentConnection.Shutdown(connection)
+        SshAgentConnection.Close(connection)
+
+        agentProcess.Stop()
+    ;
+;

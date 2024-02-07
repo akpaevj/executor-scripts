@@ -1,0 +1,43 @@
+@Global
+method Open(
+    Address: String,
+    Port: Number,
+    User: String,
+    Password: String): SshConnection
+    return new SshConnection(Address, Port, User, Password)
+;
+
+@Global
+method ConnectIB(Connection: SshConnection)
+    Connection.Execute("common connect-ib")
+;
+
+@Global
+method LoadFile(
+    Address: String,
+    Port: Number,
+    User: String,
+    Password: String,
+    FilePath: String)
+    use ssh = new SshConnection(Address, Port, User, Password)
+    use Sftp = ssh.OpenSftpConnection()
+
+    Sftp.SetCurrentDirectory("/")
+    Sftp.Put(FilePath)
+    Sftp.Close()
+;
+
+@Global
+method DisconnectIB(Connection: SshConnection)
+    Connection.Execute("common diconnect-ib")
+;
+
+@Global
+method Shutdown(Connection: SshConnection)
+    Connection.Execute("common shutdown")
+;
+
+@Global
+method Close(Connection: SshConnection)
+    Connection.Close()
+;
