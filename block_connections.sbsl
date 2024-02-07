@@ -17,7 +17,8 @@ method Script(
                 AccessPort,
                 RasAddress,
                 RasPort)
-                Console.Write("Connections to ${i} are successfully blocked and terminated")
+                
+            Console.Write("Connections to ${i} are successfully blocked and terminated")
         catch Exception: unknown
             Console.WriteError("Failed to block connections to ${i}")
         ;
