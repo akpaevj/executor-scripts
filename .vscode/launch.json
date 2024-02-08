@@ -9,16 +9,16 @@
             "type": "sbsl",
             "request": "launch",
             "scriptFile": "${file}",
-            "args": [
-                "localhost",
-                "erp_tehnogerm_test_update",
-                "Администратор",
-                "zNrtZ5jb",
-                "12345",
-                "Итекма_Адаптация",
-                "C:\\erp-main-extension-feature_adaptation_for_realease_2_5_15_65",
-                "8.3.23.2040"
-            ]
+            // "args": [
+            //     "localhost",
+            //     "erp_tehnogerm_test_update",
+            //     "Администратор",
+            //     "zNrtZ5jb",
+            //     "12345",
+            //     "Итекма_Адаптация",
+            //     "C:\\erp-main-extension-feature_adaptation_for_realease_2_5_15_65",
+            //     "8.3.23.2040"
+            // ]
             // "args": [
             //     "localhost",
             //     "erp_tehnogerm_test_update",
