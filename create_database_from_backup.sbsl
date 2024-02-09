@@ -1,0 +1,14 @@
+#required Helpers/SqlUtil.sbsl
+
+method Script(
+    Server: String,
+    Database: String,
+    User: String,
+    Password: String,
+    NewDatabaseName: String)   
+    try 
+        SqlUtil.CreateDatabaseFromLastBackup(Server, Database, User, Password, NewDatabaseName)   
+    catch Exception: unknown
+        Console.WriteError("Failed to restore database ${NewDatabaseName} from ${Database} backup: ${Exception.ToString()}")
+    ;
+;

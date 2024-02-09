@@ -9,6 +9,13 @@
             "type": "sbsl",
             "request": "launch",
             "scriptFile": "${file}",
+            "args": [
+                "localhost",
+                "erp_dev",
+                "sa",
+                "1qazxsw@",
+                "erv_dev_test"
+            ]
             // "args": [
             //     "localhost",
             //     "erp_tehnogerm_test_update",

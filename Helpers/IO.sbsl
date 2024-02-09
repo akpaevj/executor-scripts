@@ -1,4 +1,14 @@
 @Global
+method GetFileName(Path: String): String
+    return new File(Path).Name
+;
+
+@Global
+method GetParentDirectory(Path: String): String
+    return new File(Path).Directory.Path
+;
+
+@Global
 method JoinPath(path: String, path1: String): String
     if path.EndsWith("\\") or path.EndsWith("//")
         return path + path1
