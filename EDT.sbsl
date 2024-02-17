@@ -1,9 +1,9 @@
-#required Helpers/V8Util.sbsl
+#required IO.sbsl
+#required Zip.sbsl
 
-method Script(
+method BuildXmlFiles(
     CliPath: String,
     ProjectPath: String): Number
-
     if not IO.PathExists(CliPath)
         Console.WriteError("Couldn't find edt cli executable by passed path")
         return 1
@@ -35,7 +35,7 @@ method Script(
     Files.Delete(DataPath)
 
     val ArchivePath = IO.JoinPath(new File(ProjectPath).Directory.Path, "${new File(ProjectPath).Name}.zip")
-    IO.ZipFolder(BuildPath, ArchivePath)
+    Zip.ZipFolder(BuildPath, ArchivePath)
 
     Files.Delete(BuildPath)
 

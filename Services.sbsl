@@ -1,0 +1,51 @@
+#required Processes.sbsl
+
+@Global
+enum ServiceStartMode
+    Disabled,
+    Auto
+;
+
+@Global
+method Create(
+    ServiceName: String, 
+    BinPath: String,
+    User: String,
+    Password: String,
+    ServiceDescription: String = "",
+    StartMode: ServiceStartMode = ServiceStartMode.Auto, 
+    RedirectOutputToConsole: Boolean = True): Number
+    var Start = "auto"
+
+    if StartMode == ServiceStartMode.Disabled
+        Start = "disabled"
+    ;
+
+    var Args = "/C sc create \"${ServiceName}\" binPath= \"${BinPath}\" start= ${Start} obj= ${User} password= ${Password}"
+
+    if ServiceDescription.Length() > 0
+        Args = "${Args} displayname= \"${ServiceDescription}\""
+    ;
+
+    return Processes.Run("cmd", [Args], RedirectOutputToConsole = RedirectOutputToConsole, OutputEncoding = Encoding.Cp866) 
+;
+
+@Global
+method Start(ServiceName: String, RedirectOutputToConsole: Boolean = True): Number
+    return Processes.Run("cmd", ["/C sc start \"${ServiceName}\""], RedirectOutputToConsole = RedirectOutputToConsole, OutputEncoding = Encoding.Cp866) 
+;
+
+@Global
+method Stop(ServiceName: String, RedirectOutputToConsole: Boolean = True): Number
+    return Processes.Run("cmd", ["/C sc stop \"${ServiceName}\""], RedirectOutputToConsole = RedirectOutputToConsole, OutputEncoding = Encoding.Cp866)
+;
+
+@Global
+method Remove(ServiceName: String, RedirectOutputToConsole: Boolean = True): Number
+    return Processes.Run("cmd", ["/C sc delete \"${ServiceName}\""], RedirectOutputToConsole = RedirectOutputToConsole, OutputEncoding = Encoding.Cp866) 
+;
+
+@Global
+method ServiceExists(ServiceName: String): Boolean
+    return Processes.Run("cmd", ["/C sc query \"${ServiceName}\""], RedirectOutputToConsole = False, OutputEncoding = Encoding.Cp866) == 0 
+;

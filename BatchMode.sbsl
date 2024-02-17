@@ -1,18 +1,20 @@
-#required ProcessHelper.sbsl
-#required V8Util.sbsl
+#required Processes.sbsl
+#required V8.sbsl
 
 @Global
 method UpdateConfiguration(
-    Platform: V8Util.V8Platform,
+    PlatformVersion: String,
     Server: String,
     Infobase: String,
     User: String,
     Password: String,
     AccessCode: String,
     CfuPath: String): Number
+    val Platform = V8.GetInstalledPlatform(PlatformVersion)
+
     val OutFile = Files.CreateTempFile()
 
-    val args = [
+    val Args = [
         "DESIGNER",
         "/S${Server}\\${Infobase}",
         "/N${User}",
@@ -28,30 +30,16 @@ method UpdateConfiguration(
         "-Server",
         "-SessionTerminate force"
     ]
-    val Process = new OsProcess(Platform.ExecutablePath, args, True)
-    Process.Start()
-    ProcessHelper.WaitForCompletionAndReadOutput(Process)
-    Process.Stop()
+    
+    val ExitCode = Processes.Run(Platform.ExecutablePath, Args)
+    RedirectOutToConsole(OutFile)
 
-    var ExitCode = Process.GetExitCode()
-    if ExitCode > 0
-        Console.WriteError("Failed to update infobase (${ExitCode})")
-    else
-        Console.Write("${Infobase} is successfully updated")
-    ;
-
-    use OutputStream = OutFile.OpenReadableStream()
-    val OutputStreamText = OutputStream.ReadAsString()
-    if (OutputStreamText.Length() > 0)
-        Console.Write(OutputStreamText)
-    ;
-
-    return Process.GetExitCode()
+    return ExitCode
 ;
 
 @Global
 method UpdateExtension(
-    Platform: V8Util.V8Platform,
+    PlatformVersion: String,
     Server: String,
     Infobase: String,
     User: String,
@@ -59,9 +47,11 @@ method UpdateExtension(
     AccessCode: String,
     ExtensionName: String,
     ExtensionArchive: String): Number
+    val Platform = V8.GetInstalledPlatform(PlatformVersion)
+
     val OutFile = Files.CreateTempFile()
 
-    val args = [
+    val Args = [
         "DESIGNER",
         "/S${Server}\\${Infobase}",
         "/N${User}",
@@ -78,23 +68,18 @@ method UpdateExtension(
         "-Server",
         "-SessionTerminate force"
     ]
-    val Process = new OsProcess(Platform.ExecutablePath, args, True)
-    Process.Start()
-    ProcessHelper.WaitForCompletionAndReadOutput(Process)
-    Process.Stop()
+    
+    val ExitCode = Processes.Run(Platform.ExecutablePath, Args)
+    RedirectOutToConsole(OutFile)
 
-    var ExitCode = Process.GetExitCode()
-    if ExitCode > 0
-        Console.WriteError("Failed to update extension ${ExtensionName} in ${Infobase}")
-    else
-        Console.Write("Extension \"${ExtensionName}\" in ${Infobase} is successfully updated")
-    ;
+    return ExitCode
+;
 
+method RedirectOutToConsole(OutFile: File)
     use OutputStream = OutFile.OpenReadableStream()
-    val OutputStreamText = OutputStream.ReadAsString()
-    if (OutputStreamText.Length() > 0)
-        Console.Write(OutputStreamText)
-    ;
+    val OutputStreamContent = OutputStream.ReadAsString()
 
-    return Process.GetExitCode()
+    if (OutputStreamContent.Length() > 0)
+        Console.Write(OutputStreamContent)
+    ;
 ;

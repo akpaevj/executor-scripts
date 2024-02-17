@@ -1,4 +1,4 @@
-#required IO.sbsl
+#required IO.sbsl 
 #required Net.sbsl
 
 @Global
@@ -16,6 +16,13 @@ method GetInstalledPlatforms(): Array<V8Platform>
         item.Architecture = Arch.X64
         item.BinPath = IO.JoinPath(children.Path, "bin")
         item.ExecutablePath = IO.JoinPath(item.BinPath, "1cv8.exe")
+        
+        val ibsrvExecutable = new File(IO.JoinPath(item.BinPath, "ibsrv.exe"))
+        if ibsrvExecutable.Exists()
+            item.HasStandaloneServer = True
+            item.IbsrvPath = ibsrvExecutable.Path
+            item.IbcmdPath = IO.JoinPath(item.BinPath, "ibcmd.exe")
+        ;
 
         Items.Add(item)
     ;
@@ -34,7 +41,7 @@ method GetInstalledPlatform(Version: String = ""): V8Platform?
 
 @Global
 method GetHighestInstalledPlatform(): V8Platform?
-    val platforms = V8Util.GetInstalledPlatforms()
+    val platforms = V8.GetInstalledPlatforms()
     return platforms.Last()
 ;
 
@@ -72,9 +79,19 @@ method WaitSshAgentIsStarted(Port: Number = 1545, TimoutSeconds: Number): Boolea
 ;
 
 @Global
+method ThrowIfHasNoStandaloneServer(Platform: V8Platform)
+    if not Platform.HasStandaloneServer
+        throw new IllegalStateException("Platform installation doesn't contains standalone server executable")
+    ;
+;
+
+@Global
 structure V8Platform
     var Version: String = ""
     var Architecture: Arch = Arch.X64 
     var BinPath: String = ""
     var ExecutablePath: String = ""
+    var HasStandaloneServer: Boolean = False
+    var IbsrvPath: String = ""
+    var IbcmdPath: String = ""
 ;

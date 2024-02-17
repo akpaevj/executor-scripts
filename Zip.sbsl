@@ -1,0 +1,21 @@
+@Global
+method ZipFolder(Folder: File, ArchivePath: String)
+    val ArchiveFile = new File(ArchivePath)
+    var Writer = new ZipWriter(ArchiveFile.OpenWritableStream())
+
+    for F in Folder.Children
+        AddToZipArchive(Writer, F, Folder)
+    ;
+
+    Writer.Write()
+;
+
+method AddToZipArchive(Writer: ZipWriter, Source: File, Folder: File)
+    if Source.IsFile()
+        Writer.Add(Source.OpenReadableStream(), Source.Path.Replace(Folder.Path, ""))
+    ;
+
+    for F in Source.Children
+        AddToZipArchive(Writer, F, Folder)
+    ;
+;

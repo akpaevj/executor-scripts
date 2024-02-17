@@ -1,0 +1,77 @@
+#required IO.sbsl
+#required V8.sbsl
+#required Processes.sbsl
+#required Services.sbsl
+#required Yaml.sbsl
+
+const SERVICE_NAME_TEMPLATE = "Standalone server"
+const SERVICE_DESC_TEMPLATE = "Standalone server 1C:Enterprise 8.3"
+
+@Global
+method RegisterService(
+    PlatformVersion: String,
+    ServiceUser: String,
+    ServicePassword: String,
+    InstanceId: String,
+    TemplateConfigPath: String,
+    Port: Number = 8314,
+    DataPath: String = ""): Number
+    Processes.ThrowIfHasNoAdminRights()
+
+    val Platform = V8.GetInstalledPlatform(PlatformVersion)
+    V8.ThrowIfHasNoStandaloneServer(Platform)
+
+    if DataPath.Length() == 0
+        DataPath = GetServerDataPath(InstanceId)
+    ;
+
+    val ServiceName = GetServiceName(InstanceId)
+    val ServiceDesc = GetServiceDescription(InstanceId)
+
+    val NewConfigPath = IO.JoinPath(IO.GetParentDirectory(TemplateConfigPath), "${InstanceId}.yaml")
+    Files.Copy(TemplateConfigPath, NewConfigPath)
+    Yaml.ReplaceValue(NewConfigPath, "infobase.name", InstanceId)
+    Yaml.ReplaceValue(NewConfigPath, "database.name", InstanceId)
+    Yaml.ReplaceValue(NewConfigPath, "server.port", Port.ToString().Replace(" ", ""))
+
+    val BinPath = GetServiceBinPath(Platform, NewConfigPath, DataPath)
+
+    return Services.Create(ServiceName, BinPath, ServiceUser, ServicePassword, ServiceDesc)
+;
+
+@Global
+method StartService(InstanceId: String): Number
+    val ServiceName = GetServiceName(InstanceId)
+    return Services.Start(ServiceName, True)
+;
+
+@Global
+method StopService(InstanceId: String): Number
+    val ServiceName = GetServiceName(InstanceId)
+    return Services.Stop(ServiceName, True)
+;
+
+@Global
+method RemoveService(InstanceId: String): Number
+    val ServiceName = GetServiceName(InstanceId)
+    return Services.Remove(ServiceName, True)
+;
+
+method GetServerDataPath(InstanceId: String): String
+    return IO.JoinPath(ExecutionEnvironment.GetVariable("APPDATA"), "StandaloneService${Files.SeparatorSymbol}${InstanceId}")
+;
+
+method GetServiceBinPath(
+    Platform: V8.V8Platform,
+    ConfigPath: String,
+    DataPath: String = ""): String
+    return "\\\"${Platform.IbsrvPath}\\\" --service --data=\\\"${DataPath}\\\" --config=\\\"${ConfigPath}\\\""
+;
+
+method GetServiceName(InstanceId: String): String
+    return "${SERVICE_NAME_TEMPLATE} ${InstanceId}"
+;
+
+method GetServiceDescription(InstanceId: String): String
+    return "${SERVICE_DESC_TEMPLATE} (${InstanceId})"
+;

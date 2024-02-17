@@ -1,0 +1,91 @@
+@Global
+method Run(
+    Command: String,
+    Arguments: Array<String>, 
+    RedirectOutputToConsole: Boolean = True, 
+    LifeRedirect: Boolean = True,  
+    WaitCompletion: Boolean = True,
+    OutputEncoding: Encoding = Encoding.Utf8): Number
+    val Process = new OsProcess(Command, Arguments)
+    return Run(Process, RedirectOutputToConsole, LifeRedirect, WaitCompletion, OutputEncoding)
+;
+
+@Global
+method Run(
+    Process: OsProcess, 
+    RedirectOutputToConsole: Boolean = True, 
+    LifeRedirect: Boolean = True,  
+    WaitCompletion: Boolean = True,
+    OutputEncoding: Encoding = Encoding.Utf8): Number
+    Process.Start()
+
+    if RedirectOutputToConsole and LifeRedirect
+        RedirectOutputWhileAlive(Process, OutputEncoding)
+    ;
+
+    if WaitCompletion
+        Process.WaitForCompletion()
+    ;
+
+    if RedirectOutputToConsole and not LifeRedirect
+        WriteOutputToConsole(Process, OutputEncoding)
+    ;
+
+    if WaitCompletion
+        return Process.GetExitCode()
+    else
+        return 0
+    ;
+;
+
+@Global
+method RedirectOutputWhileAlive(Process: OsProcess, Encoding: Encoding = Encoding.Utf8)
+    use ProcessOutputStream = Process.GetOutputStream()
+
+    while True
+        val ProcessOutputText = ProcessOutputStream.ReadAsString(Encoding)
+
+        if (ProcessOutputText.Length() > 0)
+            Console.Write(ProcessOutputText)
+        ;
+
+        if not Process.IsAlive()
+            break
+        ;     
+    ;
+;
+
+@Global
+method WriteOutputToConsole(Process: OsProcess, Encoding: Encoding = Encoding.Utf8)
+    val Output = GetProcessOutput(Process, Encoding)
+    Console.Write(Output)
+;
+
+@Global
+method GetProcessOutput(Process: OsProcess, Encoding: Encoding = Encoding.Utf8): String
+    use ProcessOutputStream = Process.GetOutputStream()
+    return ProcessOutputStream.ReadAsString(Encoding)
+;
+
+@Global
+method HasAdminRights(): Boolean
+    val Process = new OsProcess("net", ["session"])
+    Process.Start()
+    Process.WaitForCompletion()
+
+    use OutputStream = Process.GetOutputStream()
+    val Output = OutputStream.ReadAsString(Encoding.Cp866)
+
+    val HasNo = Output.Contains("Отказано в доступе") or Output.Contains("Access denied")
+    
+    return not HasNo
+;
+
+@Global
+method ThrowIfHasNoAdminRights()
+    val Has = HasAdminRights()
+
+    if not Has
+        throw new IllegalStateException("Current user doesn't have admin rights")
+    ;
+;

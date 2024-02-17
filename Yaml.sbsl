@@ -1,0 +1,26 @@
+#required IO.sbsl
+
+@Global
+method ReplaceValue(FilePath: String, KeyPath: String, Value: String)
+     var FileContent = IO.ReadFileToEnd(FilePath)
+
+    var PathParts = KeyPath.Split(".")
+    var IndexInContent = 0
+    for Index = 0 to PathParts.Bound()
+        if (Index == PathParts.Bound())
+            break
+        ;
+
+        val Part = PathParts[Index]
+        val ToFindSpan = "${Part}:"
+        IndexInContent = FileContent.Find("${ToFindSpan}", IndexInContent)
+    ;
+
+    val ToFindSpan = "${PathParts[PathParts.Bound()]}:"
+    val LastPartStartIndex = FileContent.Find(ToFindSpan, IndexInContent)
+    val LastPartEndIndex = FileContent.Find("\n", LastPartStartIndex)
+    var NewData = "${ToFindSpan} ${Value}"
+
+    FileContent = FileContent.ReplaceRange(NewData, LastPartStartIndex, LastPartEndIndex)
+    IO.WriteTextToFile(FilePath, FileContent)
+;
