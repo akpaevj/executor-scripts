@@ -5,13 +5,11 @@ method BuildXmlFiles(
     CliPath: String,
     ProjectPath: String): Number
     if not IO.PathExists(CliPath)
-        Console.WriteError("Couldn't find edt cli executable by passed path")
-        return 1
+        throw new IllegalArgumentException("Couldn't find edt cli executable by passed path")
     ;
 
     if not IO.PathExists(ProjectPath)
-        Console.WriteError("Couldn't find project folder by passed path")
-        return 1
+        throw new IllegalArgumentException("Couldn't find project folder by passed path")
     ;
 
     val DataPath = Files.CreateTempDirectory()
