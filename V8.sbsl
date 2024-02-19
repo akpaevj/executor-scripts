@@ -2,6 +2,23 @@
 #required Net.sbsl
 
 @Global
+enum Arch
+    X86,
+    X64
+;
+
+@Global
+structure V8Platform
+    var Version: String = ""
+    var Architecture: Arch = Arch.X64 
+    var BinPath: String = ""
+    var ExecutablePath: String = ""
+    var HasStandaloneServer: Boolean = False
+    var IbsrvPath: String = ""
+    var IbcmdPath: String = ""
+;
+
+@Global
 method GetInstalledPlatforms(): Array<V8Platform>
     val Items = new Array<V8Platform>()
 
@@ -46,12 +63,6 @@ method GetHighestInstalledPlatform(): V8Platform?
 ;
 
 @Global
-enum Arch
-    X86,
-    X64
-;
-
-@Global
 method WaitSshAgentIsStarted(Port: Number = 1545, TimoutSeconds: Number): Boolean
     return Net.LocalPortIsOpen(Port, TimoutSeconds)
 ;
@@ -61,15 +72,4 @@ method ThrowIfHasNoStandaloneServer(Platform: V8Platform)
     if not Platform.HasStandaloneServer
         throw new IllegalStateException("Platform installation doesn't contains standalone server executable")
     ;
-;
-
-@Global
-structure V8Platform
-    var Version: String = ""
-    var Architecture: Arch = Arch.X64 
-    var BinPath: String = ""
-    var ExecutablePath: String = ""
-    var HasStandaloneServer: Boolean = False
-    var IbsrvPath: String = ""
-    var IbcmdPath: String = ""
 ;

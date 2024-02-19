@@ -15,7 +15,7 @@ method BuildXmlFiles(
     val DataPath = Files.CreateTempDirectory()
     val BuildPath = Files.CreateTempDirectory()
 
-    val args = [
+    val Args = [
         "-data",
         DataPath,
         "-command",
@@ -26,9 +26,9 @@ method BuildXmlFiles(
         BuildPath
     ]
 
-    val edtCli = new OsProcess(CliPath, args, True)
-    edtCli.Start()
-    edtCli.WaitForCompletion()
+    val EdtCli = new OsProcess(CliPath, Args, True)
+    EdtCli.Start()
+    EdtCli.WaitForCompletion()
 
     Files.Delete(DataPath)
 
@@ -38,5 +38,5 @@ method BuildXmlFiles(
 
     Files.Delete(BuildPath)
 
-    return edtCli.GetExitCode()
+    return EdtCli.GetExitCode()
 ;
