@@ -7,9 +7,7 @@ method ZipFolder(FolderPath: String, ArchivePath: String, ZipChildren: Boolean =
     var Writer = new ZipWriter(Archive.OpenWritableStream())
 
     if ZipChildren
-        for File in Folder.Children
-            AddToZipArchive(File, Writer)
-        ;
+        Folder.Children.ForEach(Child -> AddToZipArchive(Child, Writer))
     else
         AddToZipArchive(Folder, Writer)
     ;
@@ -21,8 +19,6 @@ method AddToZipArchive(FileToZipping: File, Writer: ZipWriter, Path: String = ""
     if FileToZipping.IsFile()
         Writer.Add(FileToZipping.OpenReadableStream(), IO.JoinPath(Path, FileToZipping.Name))
     else
-        for File in FileToZipping.Children
-            AddToZipArchive(File, Writer, IO.JoinPath(Path, FileToZipping.Name))
-        ;
+        FileToZipping.Children.ForEach(Child -> AddToZipArchive(Child, Writer, IO.JoinPath(Path, FileToZipping.Name)))
     ;
 ;
