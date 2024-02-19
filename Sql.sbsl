@@ -7,16 +7,16 @@ method CreateDatabaseFromLastBackup(
     User: String,
     Password: String,
     NewDatabaseName: String)
-    use connection = BuildConnection(Server, Database, User, Password)
+    use Connection = BuildConnection(Server, Database, User, Password)
 
-    val databaseFiles = GetDatabaseFileNames(connection, Database)
-    val fullBackup = GetLastFullBackup(connection, Database)
+    val DatabaseFiles = GetDatabaseFileNames(Connection, Database)
+    val FullBackup = GetLastFullBackup(Connection, Database)
 
-    RestoreBackup(connection, databaseFiles, fullBackup, NewDatabaseName)
+    RestoreBackup(Connection, DatabaseFiles, FullBackup, NewDatabaseName)
 ;
 
 method GetLastFullBackup(Connection: SqlConnection, Database: String): FullBackup
-    val query = Connection.CreateQueryWithSelect(
+    val Query = Connection.CreateQueryWithSelect(
         "SELECT  
         A.[Server],
         A.database_name,
@@ -67,16 +67,16 @@ method GetLastFullBackup(Connection: SqlConnection, Database: String): FullBacku
         ORDER BY  
         A.database_name")
 
-    use qResult = query.Execute()
-    qResult.Next()
+    use QResult = Query.Execute()
+    QResult.Next()
 
     return new FullBackup(
-        qResult.Get("physical_device_name").ToString()
+        QResult.Get("physical_device_name").ToString()
     )
 ;
 
 method GetDatabaseFileNames(Connection: SqlConnection, Database: String): DatabaseFiles
-    val query = Connection.CreateQueryWithSelect(
+    val Query = Connection.CreateQueryWithSelect(
         "Select 
             d.name as DatabaseName,
             L.name as LogFileName,
@@ -98,37 +98,37 @@ method GetDatabaseFileNames(Connection: SqlConnection, Database: String): Databa
             D.name"
     )
 
-    use qResult = query.Execute()
-    qResult.Next()
+    use QResult = Query.Execute()
+    QResult.Next()
 
     return new DatabaseFiles(
-        qResult.Get("DataFileName").ToString(),
-        qResult.Get("DataFilePath").ToString(),
-        qResult.Get("LogFileName").ToString(),
-        qResult.Get("LogFilePath").ToString()
+        QResult.Get("DataFileName").ToString(),
+        QResult.Get("DataFilePath").ToString(),
+        QResult.Get("LogFileName").ToString(),
+        QResult.Get("LogFilePath").ToString()
     )
 ;
 
 method RestoreBackup(Connection: SqlConnection, DatabaseFiles: DatabaseFiles, FullBackup: FullBackup, NewDatabaseName: String)
-    val defaultLocations = GetDatabaseDefaultLocations(Connection)
-    val mdfPath = IO.JoinPath(defaultLocations.Data, "${NewDatabaseName}.mdf")
-    val logPath = IO.JoinPath(defaultLocations.Log, "${NewDatabaseName}_log.ldf")
+    val DefaultLocations = GetDatabaseDefaultLocations(Connection)
+    val MdfPath = IO.JoinPath(DefaultLocations.Data, "${NewDatabaseName}.mdf")
+    val LogPath = IO.JoinPath(DefaultLocations.Log, "${NewDatabaseName}_log.ldf")
     
-    val query = Connection.CreateQueryWithoutSelect(
+    val Query = Connection.CreateQueryWithoutSelect(
         "RESTORE DATABASE [${NewDatabaseName}] FROM  DISK = N'${FullBackup.Path}' 
-        WITH MOVE N'${DatabaseFiles.DataFileName}' TO N'${mdfPath}',  
-            MOVE N'${DatabaseFiles.LogFileName}' TO N'${logPath}',
+        WITH MOVE N'${DatabaseFiles.DataFileName}' TO N'${MdfPath}',  
+            MOVE N'${DatabaseFiles.LogFileName}' TO N'${LogPath}',
         REPLACE;")
 
-    query.Execute()
+    Query.Execute()
 ;
 
 method GetDatabaseDefaultLocations(Connection: SqlConnection): DefaultDatabaseFilesLocation
-    val result = GetDatabaseFileNames(Connection, "master")
+    val Result = GetDatabaseFileNames(Connection, "master")
 
     return new DefaultDatabaseFilesLocation(
-        IO.GetParentDirectory(result.DataFilePath), 
-        IO.GetParentDirectory(result.LogFilePath))    
+        IO.GetParentDirectory(Result.DataFilePath), 
+        IO.GetParentDirectory(Result.LogFilePath))    
 ;
 
 method BuildConnection(

@@ -19,8 +19,8 @@ method LoadFile(
     User: String,
     Password: String,
     FilePath: String)
-    use ssh = new SshConnection(Address, Port, User, Password)
-    use Sftp = ssh.OpenSftpConnection()
+    use Ssh = new SshConnection(Address, Port, User, Password)
+    use Sftp = Ssh.OpenSftpConnection()
 
     Sftp.SetCurrentDirectory("/")
     Sftp.Put(FilePath)

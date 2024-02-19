@@ -19,14 +19,14 @@ method JoinPath(Path: String, Path1: String): String
 
 @Global
 method JoinPath(Path: String, Path1: String, Path2: String): String
-    val result = JoinPath(Path, Path1)
-    return JoinPath(result, Path2)
+    val Result = JoinPath(Path, Path1)
+    return JoinPath(Result, Path2)
 ;
 
 @Global
 method JoinPath(Path: String, Path1: String, Path2: String, Path3: String): String
-    val result = JoinPath(Path, Path1, Path2)
-    return JoinPath(result, Path3)
+    val Result = JoinPath(Path, Path1, Path2)
+    return JoinPath(Result, Path3)
 ;
 
 @Global

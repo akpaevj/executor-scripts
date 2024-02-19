@@ -22,26 +22,26 @@ structure V8Platform
 method GetInstalledPlatforms(): Array<V8Platform>
     val Items = new Array<V8Platform>()
 
-    val onecRootFolder = new File("1cv8", ExecutionEnvironment.GetVariable("ProgramFiles"))
+    val OnecRootFolder = new File("1cv8", ExecutionEnvironment.GetVariable("ProgramFiles"))
 
-    val pattern = new Pattern("\\d+\\.\\d+\\.\\d+\\.\\d+")
-    val platfromPaths = onecRootFolder.Children.Filter(c -> pattern.FindMatches(c.Name, 1).Size() > 0)
+    val Pattern = new Pattern("\\d+\\.\\d+\\.\\d+\\.\\d+")
+    val PlatfromPaths = OnecRootFolder.Children.Filter(c -> Pattern.FindMatches(c.Name, 1).Size() > 0)
     
-    for children in platfromPaths
-        val item = new V8Platform()
-        item.Version = children.Name
-        item.Architecture = Arch.X64
-        item.BinPath = IO.JoinPath(children.Path, "bin")
-        item.ExecutablePath = IO.JoinPath(item.BinPath, "1cv8.exe")
+    for Child in PlatfromPaths
+        val Platform = new V8Platform()
+        Platform.Version = Child.Name
+        Platform.Architecture = Arch.X64
+        Platform.BinPath = IO.JoinPath(Child.Path, "bin")
+        Platform.ExecutablePath = IO.JoinPath(Platform.BinPath, "1cv8.exe")
         
-        val ibsrvExecutable = new File(IO.JoinPath(item.BinPath, "ibsrv.exe"))
-        if ibsrvExecutable.Exists()
-            item.HasStandaloneServer = True
-            item.IbsrvPath = ibsrvExecutable.Path
-            item.IbcmdPath = IO.JoinPath(item.BinPath, "ibcmd.exe")
+        val IbsrvExecutable = new File(IO.JoinPath(Platform.BinPath, "ibsrv.exe"))
+        if IbsrvExecutable.Exists()
+            Platform.HasStandaloneServer = True
+            Platform.IbsrvPath = IbsrvExecutable.Path
+            Platform.IbcmdPath = IO.JoinPath(Platform.BinPath, "ibcmd.exe")
         ;
 
-        Items.Add(item)
+        Items.Add(Platform)
     ;
 
     return Items.SortBy(c -> c.Version)
@@ -58,8 +58,8 @@ method GetInstalledPlatform(Version: String = ""): V8Platform?
 
 @Global
 method GetHighestInstalledPlatform(): V8Platform?
-    val platforms = V8.GetInstalledPlatforms()
-    return platforms.Last()
+    val Platforms = V8.GetInstalledPlatforms()
+    return Platforms.Last()
 ;
 
 @Global

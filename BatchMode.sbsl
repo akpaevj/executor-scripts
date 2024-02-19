@@ -76,7 +76,7 @@ method StartSshAgent(
         AgentBaseBir = Files.CreateTempDirectory().Path
     ;
 
-    val args = [
+    val Args = [
         "DESIGNER",
         "/S ${Server}",
         "/IBName ${Infobase}",
@@ -85,7 +85,7 @@ method StartSshAgent(
         "/AgentSSHHostKeyAuto",
         "/AgentBaseDir ${AgentBaseBir}"
     ]
-    val Process = new OsProcess(Platform.ExecutablePath, args, True)
+    val Process = new OsProcess(Platform.ExecutablePath, Args, True)
     Process.Start()
 
     return Process
