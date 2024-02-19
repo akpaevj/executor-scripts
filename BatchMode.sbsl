@@ -78,8 +78,7 @@ method StartSshAgent(
 
     val Args = [
         "DESIGNER",
-        "/S ${Server}",
-        "/IBName ${Infobase}",
+        "/S ${Server}\\${Infobase}",
         "/AgentMode",
         "/AgentPort ${Port.ToString().Replace(" ", "")}",
         "/AgentSSHHostKeyAuto",
