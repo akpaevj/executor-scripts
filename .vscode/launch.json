@@ -8,14 +8,20 @@
             "name": "Executor",
             "type": "sbsl",
             "request": "launch",
-            "scriptFile": "${file}",
+            "scriptFile": "${file",
             "args": [
-                "8.3.23.2040",
-                "W228\\USR1CV8",
-                "N3Ak8bPu7",
-                "erp_main_extension_2765112a",
-                "C:\\Users\\akpaev.e\\Desktop\\erp-ibsrv-config.yml"
+                "::ZipFolder",
+                "C:\\Users\\akpaev.e\\Desktop\\test3",
+                "C:\\Users\\akpaev.e\\Desktop\\test3.zip",
+                "True"
             ]
+            // "args": [
+            //     "8.3.23.2040",
+            //     "W228\\USR1CV8",
+            //     "N3Ak8bPu7",
+            //     "erp_main_extension_2765112a",
+            //     "C:\\Users\\akpaev.e\\Desktop\\erp-ibsrv-config.yml"
+            // ]
             // "args": [
             //     "C:\\Users\\akpaev.e\\Desktop\\erp-ibsrv-config2.yml",
             //     "http.http-services.service.name",

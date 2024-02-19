@@ -33,7 +33,7 @@ method BuildXmlFiles(
     Files.Delete(DataPath)
 
     val ArchivePath = IO.JoinPath(new File(ProjectPath).Path, "${new File(ProjectPath).Name}.zip")
-    Zip.ZipFolder(BuildPath, ArchivePath)
+    Zip.ZipFolder(BuildPath.Path, ArchivePath)
     Console.Write("Zipped project path: ${ArchivePath}")
 
     Files.Delete(BuildPath)
