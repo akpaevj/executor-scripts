@@ -52,28 +52,6 @@ enum Arch
 ;
 
 @Global
-method StartSshAgent(
-    InstalledPlatform: V8Platform,
-    Server: String,
-    Infobase: String,
-    AgentBaseBir: File,
-    Port: Number = 1545): OsProcess
-    val args = [
-        "DESIGNER",
-        "/S ${Server}",
-        "/IBName ${Infobase}",
-        "/AgentMode",
-        "/AgentPort ${Port.ToString().Replace(" ", "")}",
-        "/AgentSSHHostKeyAuto",
-        "/AgentBaseDir ${AgentBaseBir.Path}"
-    ]
-    val Process = new OsProcess(InstalledPlatform.ExecutablePath, args, True)
-    Process.Start()
-
-    return Process
-;
-
-@Global
 method WaitSshAgentIsStarted(Port: Number = 1545, TimoutSeconds: Number): Boolean
     return Net.LocalPortIsOpen(Port, TimoutSeconds)
 ;

@@ -3,23 +3,23 @@ method Run(
     Command: String,
     Arguments: Array<String>, 
     RedirectOutputToConsole: Boolean = True, 
-    LifeRedirect: Boolean = True,  
+    LiveRedirect: Boolean = True,  
     WaitCompletion: Boolean = True,
     OutputEncoding: Encoding = Encoding.Utf8): Number
     val Process = new OsProcess(Command, Arguments)
-    return Run(Process, RedirectOutputToConsole, LifeRedirect, WaitCompletion, OutputEncoding)
+    return Run(Process, RedirectOutputToConsole, LiveRedirect, WaitCompletion, OutputEncoding)
 ;
 
 @Global
 method Run(
     Process: OsProcess, 
     RedirectOutputToConsole: Boolean = True, 
-    LifeRedirect: Boolean = True,  
+    LiveRedirect: Boolean = True,  
     WaitCompletion: Boolean = True,
     OutputEncoding: Encoding = Encoding.Utf8): Number
     Process.Start()
 
-    if RedirectOutputToConsole and LifeRedirect
+    if RedirectOutputToConsole and LiveRedirect
         RedirectOutputWhileAlive(Process, OutputEncoding)
     ;
 
@@ -27,7 +27,7 @@ method Run(
         Process.WaitForCompletion()
     ;
 
-    if RedirectOutputToConsole and not LifeRedirect
+    if RedirectOutputToConsole and not LiveRedirect
         WriteOutputToConsole(Process, OutputEncoding)
     ;
 

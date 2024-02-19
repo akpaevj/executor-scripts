@@ -1,5 +1,6 @@
 #required Processes.sbsl
 #required V8.sbsl
+#required IO.sbsl
 
 @Global
 method UpdateConfiguration(
@@ -14,22 +15,16 @@ method UpdateConfiguration(
 
     val OutFile = Files.CreateTempFile()
 
-    val Args = [
-        "DESIGNER",
-        "/S${Server}\\${Infobase}",
-        "/N${User}",
-        "/P${Password}",
-        "/DisableStartupMessages",
-        "/DisableStartupDialogs",
-        "/Out\"${OutFile}\"",
-        "/UC${AccessCode}",
-        "/UpdateCfg\"${CfuPath}\"",
-        "-force",
-        "/UpdateDBCfg",
-        "-Dynamic-",
-        "-Server",
-        "-SessionTerminate force"
-    ]
+    val Args = DesignerBatchModeArguments(
+        Server,
+        Infobase,
+        User,
+        Password,
+        AccessCode
+    )
+    Args.Add("/Out\"${OutFile}\"")
+    Args.Add("/UpdateCfg\"${CfuPath}\" -force -NoCheck")
+    Args.Add("/UpdateDBCfg -Dynamic- -Server -SessionTerminate force")
     
     val ExitCode = Processes.Run(Platform.ExecutablePath, Args)
     RedirectOutToConsole(OutFile)
@@ -51,28 +46,49 @@ method UpdateExtension(
 
     val OutFile = Files.CreateTempFile()
 
-    val Args = [
-        "DESIGNER",
-        "/S${Server}\\${Infobase}",
-        "/N${User}",
-        "/P${Password}",
-        "/DisableStartupMessages",
-        "/DisableStartupDialogs",
-        "/Out\"${OutFile}\"",
-        "/UC${AccessCode}",
-        "/LoadConfigFromFiles\"${ExtensionArchive}\"",
-        "-Extension\"${ExtensionName}\"",
-        "-NoCheck",
-        "/UpdateDBCfg",
-        "-Dynamic-",
-        "-Server",
-        "-SessionTerminate force"
-    ]
+    val Args = DesignerBatchModeArguments(
+        Server,
+        Infobase,
+        User,
+        Password,
+        AccessCode
+    )
+    Args.Add("/Out\"${OutFile}\"")
+    Args.Add("/LoadConfigFromFiles\"${ExtensionArchive}\" -Extension\"${ExtensionName}\" -NoCheck")
+    Args.Add("/UpdateDBCfg -Dynamic- -Server -SessionTerminate force")
     
     val ExitCode = Processes.Run(Platform.ExecutablePath, Args)
     RedirectOutToConsole(OutFile)
 
     return ExitCode
+;
+
+@Global
+method StartSshAgent(
+    PlatformVersion: String,
+    Server: String,
+    Infobase: String,
+    AgentBaseBir: String = "",
+    Port: Number = 1543): OsProcess
+    val Platform = V8.GetInstalledPlatform(PlatformVersion)
+
+    if AgentBaseBir.Length() == 0
+        AgentBaseBir = Files.CreateTempDirectory().Path
+    ;
+
+    val args = [
+        "DESIGNER",
+        "/S ${Server}",
+        "/IBName ${Infobase}",
+        "/AgentMode",
+        "/AgentPort ${Port.ToString().Replace(" ", "")}",
+        "/AgentSSHHostKeyAuto",
+        "/AgentBaseDir ${AgentBaseBir}"
+    ]
+    val Process = new OsProcess(Platform.ExecutablePath, args, True)
+    Process.Start()
+
+    return Process
 ;
 
 method RedirectOutToConsole(OutFile: File)
@@ -82,4 +98,31 @@ method RedirectOutToConsole(OutFile: File)
     if (OutputStreamContent.Length() > 0)
         Console.Write(OutputStreamContent)
     ;
+;
+
+method DesignerBatchModeArguments(
+    Server: String, 
+    Infobase: String, 
+    User: String, 
+    Password: String,
+    AccessCode: String = ""): Array<String>
+    val Args = [
+        "DESIGNER",
+        "/S${Server}\\${Infobase}",
+        "/N${User}",
+        "/P${Password}",
+        "/DisableStartupMessages",
+        "/DisableStartupDialogs"
+    ]
+
+    if AccessCode.Length() > 0
+        Args.Add("/UC${AccessCode}")
+    ;
+
+    return Args
+;
+
+structure ConfigInfo
+    val Name: String
+    val Version: String
 ;
