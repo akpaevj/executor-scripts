@@ -117,7 +117,8 @@ method RestoreBackup(Connection: SqlConnection, DatabaseFiles: DatabaseFiles, Fu
     val Query = Connection.CreateQueryWithoutSelect(
         "RESTORE DATABASE [${NewDatabaseName}] FROM  DISK = N'${FullBackup.Path}' 
         WITH MOVE N'${DatabaseFiles.DataFileName}' TO N'${MdfPath}',  
-            MOVE N'${DatabaseFiles.LogFileName}' TO N'${LogPath}';")
+            MOVE N'${DatabaseFiles.LogFileName}' TO N'${LogPath}'
+        REPLACE;")
 
     Query.Execute()
 ;

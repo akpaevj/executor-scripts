@@ -9,13 +9,12 @@ const SERVICE_DESC_TEMPLATE = "Standalone server 1C:Enterprise 8.3"
 
 @Global
 method RegisterService(
-    PlatformVersion: String,
     ServiceUser: String,
     ServicePassword: String,
     InstanceId: String,
     TemplateConfigPath: String,
-    Port: Number = 8314,
-    DataPath: String = ""): Number
+    DataPath: String = "",
+    PlatformVersion: String = ""): Number
     Processes.ThrowIfHasNoAdminRights()
 
     val Platform = V8.GetInstalledPlatform(PlatformVersion)
@@ -30,9 +29,9 @@ method RegisterService(
 
     val NewConfigPath = IO.JoinPath(IO.GetParentDirectory(TemplateConfigPath), "${InstanceId}.yaml")
     Files.Copy(TemplateConfigPath, NewConfigPath)
+    Yaml.ReplaceValue(NewConfigPath, "infobase.id", new Uuid().ToString())
     Yaml.ReplaceValue(NewConfigPath, "infobase.name", InstanceId)
     Yaml.ReplaceValue(NewConfigPath, "database.name", InstanceId)
-    Yaml.ReplaceValue(NewConfigPath, "server.port", Port.ToString().Replace(" ", ""))
 
     val BinPath = GetServiceBinPath(Platform, NewConfigPath, DataPath)
 
