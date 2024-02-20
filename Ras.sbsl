@@ -25,7 +25,10 @@ method CreateInfobaseIfNotExists(
         NewInfobase.Locale = "ru"
         NewInfobase.Name = Infobase
 
-        NewInfobase.Write()
+        try 
+            NewInfobase.Write()
+        finally  
+        ;
     ;
 ;
 
