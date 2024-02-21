@@ -53,7 +53,7 @@ method UpdateConfiguration(
         AccessCode
     )
     Args.Add("/Out\"${OutFile}\"")
-    Args.Add("/UpdateCfg\"${CfuPath}\" -force -NoCheck")
+    Args.Add("/UpdateCfg\"${CfuPath}\"")
     Args.Add("/UpdateDBCfg -Dynamic- -Server -SessionTerminate force")
     
     val ExitCode = Processes.Run(Platform.ExecutablePath, Args)
