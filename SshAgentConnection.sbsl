@@ -1,9 +1,11 @@
+#required IO.sbsl
+
 @Global
 method Open(
-    Address: String,
-    Port: Number,
     User: String,
-    Password: String): SshConnection
+    Password: String,
+    Address: String = "localhost",
+    Port: Number = 1543): SshConnection
     return new SshConnection(Address, Port, User, Password)
 ;
 
@@ -13,12 +15,17 @@ method ConnectIB(Connection: SshConnection)
 ;
 
 @Global
+method UploadConfiguration(Connection: SshConnection, ConfigFilePath: String)
+    Connection.Execute("config dump-config-to-files --dir=\".\" --list-file=\"${ConfigFilePath}\"")
+;
+
+@Global
 method LoadFile(
-    Address: String,
-    Port: Number,
     User: String,
     Password: String,
-    FilePath: String)
+    FilePath: String,
+    Address: String = "localhost",
+    Port: Number = 1543)
     use Ssh = new SshConnection(Address, Port, User, Password)
     use Sftp = Ssh.OpenSftpConnection()
 

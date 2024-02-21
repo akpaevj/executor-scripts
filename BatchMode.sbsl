@@ -1,6 +1,36 @@
 #required Processes.sbsl
 #required V8.sbsl
 #required IO.sbsl
+#required SshAgentConnection.sbsl
+#required Net.sbsl
+
+@Global
+method GetConfigurationInfo(
+    PlatformVersion: String,
+    Server: String,
+    Infobase: String,
+    User: String,
+    Password: String)
+    val SshAgentBaseDir = Files.CreateTempDirectory()
+    val SshAgent = StartSshAgent(PlatformVersion, Server, Infobase, SshAgentBaseDir.Path)
+    
+    try 
+        if Net.LocalPortIsOpen(1543, 10)
+            val ConfigFile = Files.Create(IO.JoinPath(SshAgentBaseDir.Path, "0" + Files.SeparatorSymbol + "files-to-upload.txt"))
+            IO.WriteTextToFile(ConfigFile.Path, "Configuration")
+
+            use Connection = SshAgentConnection.Open(User, Password)
+
+            SshAgentConnection.ConnectIB(Connection)
+            SshAgentConnection.UploadConfiguration(Connection, ConfigFile.Name)
+            SshAgentConnection.Close(Connection)
+        else
+            Console.Write("Waiting for the opening port timeout is expired")
+        ;   
+    finally
+        SshAgent.Stop()   
+    ;
+;
 
 @Global
 method UpdateConfiguration(

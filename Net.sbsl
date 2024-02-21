@@ -1,27 +1,28 @@
+#required Processes.sbsl
+
 @Global
 method LocalPortIsOpen(Port: Number, TimeoutSeconds: Number): Boolean
     val Args = [
         "/c",
-        "netstat -a | find \":${Port.ToString().Replace(" ", "")}\""
+        "netstat -an | find \":${Port.ToString().Replace(" ", "")}\""
     ]
-    val Process = new OsProcess("cmd.exe", Args)
-    Process.Start()
-    use Output = Process.GetOutputStream()
 
     val FinishTimestamp = DateTime.Now().AddSeconds(TimeoutSeconds)
 
     while DateTime.Now() < FinishTimestamp
-        Pause(Duration.OfMilliseconds(100))
+        val Process = new OsProcess("cmd.exe", Args)
+        Process.Start()
+        Process.WaitForCompletion()
 
-        val Text = Output.ReadAsString()
+        val Output = Processes.GetProcessOutput(Process)
 
-        if Text.Length() > 0
+        if Output.Length() > 0
             Process.Stop()
             return True
         ;
+        
+        Pause(Duration.OfMilliseconds(100))
     ; 
-
-    Process.Stop()
 
     return False
 ;
