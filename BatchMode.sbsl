@@ -41,7 +41,7 @@ method UpdateExtension(
     Password: String,
     AccessCode: String,
     ExtensionName: String,
-    ExtensionArchive: String): Number
+    ExtensionPath: String): Number
     val Platform = V8.GetInstalledPlatform(PlatformVersion)
 
     val OutFile = Files.CreateTempFile()
@@ -54,7 +54,13 @@ method UpdateExtension(
         AccessCode
     )
     Args.Add("/Out\"${OutFile}\"")
-    Args.Add("/LoadConfigFromFiles\"${ExtensionArchive}\" -Extension\"${ExtensionName}\" -NoCheck")
+
+    if new File(ExtensionPath).Extension.ToUpperCase() == "CFE"
+        Args.Add("/LoadCfg\"${ExtensionPath}\" -Extension\"${ExtensionName}\"")
+    else
+        Args.Add("/LoadConfigFromFiles\"${ExtensionPath}\" -Extension\"${ExtensionName}\" -NoCheck")
+    ;
+
     Args.Add("/UpdateDBCfg -Dynamic- -Server -SessionTerminate force")
     
     val ExitCode = Processes.Run(Platform.ExecutablePath, Args)
