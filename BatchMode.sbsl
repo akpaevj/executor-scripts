@@ -86,9 +86,9 @@ method UpdateExtension(
     Args.Add("/Out\"${OutFile}\"")
 
     if new File(ExtensionPath).Extension.ToUpperCase() == "CFE"
-        Args.Add("/LoadCfg\"${ExtensionPath}\" -Extension\"${ExtensionName}\"")
+        Args.Add("/LoadCfg\"${ExtensionPath}\" -Extension${ExtensionName}")
     else
-        Args.Add("/LoadConfigFromFiles\"${ExtensionPath}\" -Extension\"${ExtensionName}\" -NoCheck")
+        Args.Add("/LoadConfigFromFiles\"${ExtensionPath}\" -Extension${ExtensionName} -NoCheck")
     ;
 
     Args.Add("/UpdateDBCfg -Dynamic- -Server -SessionTerminate force")
