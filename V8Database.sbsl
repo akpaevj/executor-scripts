@@ -36,10 +36,6 @@ method GetConfigInfo(
     Password: String): ConfigInfo
     use Connection = Sql.BuildConnection(Server, Database, User, Password)
 
-    val Test = GetExtensionZippedInfo(Connection, "EF_ОШ37761")
-    val Path = Files.CreateTempFile()
-    IO.WriteToFile(Path.Path, Test)
-
     val Root = GetConfigFileDataAsBracketsNode(Connection, "root")
     val Conf =  GetConfigFileDataAsBracketsNode(Connection, Root.GetChildNode([1]).Value)
 
