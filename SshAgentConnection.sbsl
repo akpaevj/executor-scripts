@@ -10,17 +10,17 @@ method Open(
 ;
 
 @Global
-method ConnectIB(Connection: SshConnection)
-    Connection.Execute("common connect-ib")
+method ConnectIB(Console: SshConsole)
+    Console.Execute("common connect-ib", 10s)?.Close()
 ;
 
 @Global
-method UploadConfiguration(Connection: SshConnection, ConfigFilePath: String)
-    Connection.Execute("config dump-config-to-files --dir=\".\" --list-file=\"${ConfigFilePath}\"")
+method UploadConfiguration(Console: SshConsole, ConfigFilePath: String)
+    Console.Execute("config dump-config-to-files --dir=\".\" --list-file=\"${ConfigFilePath}\"", 2m)?.Close()
 ;
 
 @Global
-method LoadFile(
+method UploadFile(
     User: String,
     Password: String,
     FilePath: String,
@@ -35,16 +35,50 @@ method LoadFile(
 ;
 
 @Global
-method DisconnectIB(Connection: SshConnection)
-    Connection.Execute("common diconnect-ib")
+method DownloadFile(
+    User: String,
+    Password: String,
+    FilePath: String,
+    Address: String = "localhost",
+    Port: Number = 1543): String?
+    use Ssh = new SshConnection(Address, Port, User, Password)
+    use Sftp = Ssh.OpenSftpConnection()
+
+    val TempFile = Files.CreateTempFile()
+
+    Sftp.SetCurrentDirectory("/")
+    Sftp.Get(FilePath, TempFile)
+    Sftp.Close()
+
+    return TempFile.Path
 ;
 
 @Global
-method Shutdown(Connection: SshConnection)
-    Connection.Execute("common shutdown")
+method DisconnectIB(Console: SshConsole)
+    Console.Execute("common disconnect-ib", 10s)
 ;
 
 @Global
-method Close(Connection: SshConnection)
-    Connection.Close()
+method Shutdown(Console: SshConsole)
+    Console.Execute("common shutdown", 10s)
+;
+
+@Global
+method Close(Console: SshConsole)
+    Console.Close()
+;
+
+method WaitTillCommandEnd(Console: SshConsole, Timeout: Duration = 60s)
+    val FinishTimestamp = DateTime.Now().AddMilliseconds(Timeout.InMilliseconds())
+
+    while DateTime.Now() < FinishTimestamp
+        val Data = Console.OutputStream.ReadAsString()
+        val LastLine = Data.GetLines().Last()
+
+        if LastLine.StartsWith("Операция завершена успешно")
+            break
+        ;
+        
+        Pause(Duration.OfMilliseconds(100))
+    ; 
 ;

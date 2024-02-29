@@ -1,0 +1,136 @@
+#required Sql.sbsl
+#required V8Brackets.sbsl
+
+structure DBNamesEntry
+    val Id: String
+    val ObjectType: String
+    val Number: Number
+
+    method IsSystemObject(): Boolean
+        return Id == "00000000-0000-0000-0000-000000000000"
+    ;
+;
+
+enum DataLockingControlMode
+    None
+    Manual
+    Auto
+    AutoAndManual
+;
+
+structure ConfigInfo
+    val Name: String
+    val Synonym: String
+    val Comment: String
+    val Supplier: String
+    val Version: String
+    req val DataLockingControlMode: DataLockingControlMode
+    val CompatibilityMode: String
+;
+
+@Global
+method GetConfigInfo(
+    Server: String,
+    Database: String,
+    User: String,
+    Password: String): ConfigInfo
+    use Connection = Sql.BuildConnection(Server, Database, User, Password)
+
+    val Test = GetExtensionZippedInfo(Connection, "EF_ОШ37761")
+    val Path = Files.CreateTempFile()
+    IO.WriteToFile(Path.Path, Test)
+
+    val Root = GetConfigFileDataAsBracketsNode(Connection, "root")
+    val Conf =  GetConfigFileDataAsBracketsNode(Connection, Root.GetChildNode([1]).Value)
+
+    return new ConfigInfo(
+        Conf.GetChildNode([3, 1, 1, 1, 1, 2]).AsString(),
+        GetSysonym(Conf.GetChildNode([3, 1, 1, 1, 1, 3])),
+        Conf.GetChildNode([3, 1, 1, 1, 1, 4]).AsString(),
+        Conf.GetChildNode([3, 1, 1, 14]).AsString(),
+        Conf.GetChildNode([3, 1, 1, 15]).AsString(),
+        DataLockingControlMode.Items()[Conf.GetChildNode([3, 1, 1, 17]).AsNumber()],
+        GetCompatibilityMode(Conf.GetChildNode([3, 1, 1, 26]))
+    )
+;
+
+method GetDbNames(Connection: SqlConnection): Map<String, Array<DBNamesEntry>>
+    val Result = new Map<String, Array<DBNamesEntry>>()
+
+    val Params = GetParamsFileDataAsBracketsNode(Connection, "DBNames")
+    val Entries = Params.GetChildNode([1])
+    val EntriesCount = Entries.GetChildNode([0]).AsNumber()
+
+    for Index = 1 to EntriesCount
+        val RawEntry = Entries.Nodes[Index]
+        val Entry = new DBNamesEntry(RawEntry.Nodes[0].Value, RawEntry.Nodes[1].AsString(), RawEntry.Nodes[2].AsNumber())
+
+        if Result.ContainsKey(Entry.Id)
+            Result[Entry.Id].Add(Entry)
+        else
+            Result.Insert(Entry.Id, [Entry])
+        ;
+    ;
+
+    return Result
+;
+
+method GetParamsFileDataAsBracketsNode(Connection: SqlConnection, FileName: String, Compressed: Boolean = True): V8Brackets.BracketsNode
+    return GetFileDataAsBracketsNode(Connection, "Params", FileName, Compressed)
+;
+
+method GetConfigFileDataAsBracketsNode(Connection: SqlConnection, FileName: String, Compressed: Boolean = True): V8Brackets.BracketsNode
+    return GetFileDataAsBracketsNode(Connection, "Config", FileName, Compressed)
+;
+
+method GetFileDataAsBracketsNode(Connection: SqlConnection, TableName: String, FileName: String, Compressed: Boolean = True): V8Brackets.BracketsNode
+    val Data = GetFileDataAsString(Connection, TableName, FileName, Compressed)
+    return V8Brackets.ReadBlock(Data)
+;
+
+method GetFileDataAsString(Connection: SqlConnection, TableName: String, FileName: String, Compressed: Boolean = True): String
+    return new String(GetFileData(Connection, TableName, FileName, Compressed), Encoding.Utf8)
+;
+
+method GetFileData(Connection: SqlConnection, TableName: String, FileName: String, Compressed: Boolean = True): Bytes
+    var Field = Compressed ? "CAST(DECOMPRESS(0x1F8B0800000000000400 + [BinaryData]) AS VARBINARY(MAX))" : "[BinaryData]"
+    val Query = Connection.CreateQueryWithSelect("SELECT %Field as Data FROM [dbo].[%TableName] WITH(NOLOCK) WHERE [FileName] = N'%FileName'")
+
+    use QResult = Query.Execute()
+    QResult.Next()
+
+    val Result = QResult.Get("Data") as Bytes
+
+    if Result.Length() > 3 and Result.GetRange(0, 3) == Bytes{EF BB BF}
+        return Result.GetRange(3)
+    else
+        return Result
+    ;
+;
+
+method GetExtensionZippedInfoAsString(Connection: SqlConnection, ExtensionName: String): String
+    return new String(GetExtensionZippedInfo(Connection, ExtensionName), Encoding.Utf8)
+;
+
+method GetExtensionZippedInfo(Connection: SqlConnection, ExtensionName: String): Bytes
+    val Query = Connection.CreateQueryWithSelect("SELECT [_ExtensionZippedInfo] as Data FROM [dbo].[_ExtensionsInfo] WITH(NOLOCK) WHERE [_ExtName] = N'%ExtensionName'")
+
+    use QResult = Query.Execute()
+    QResult.Next()
+
+    return QResult.Get("Data") as Bytes
+;
+
+method GetCompatibilityMode(Node: V8Brackets.BracketsNode): String
+    return "${new Number(Node.Value.Substring(0, 1))}.${new Number(Node.Value.Substring(1, 3))}.${new Number(Node.Value.Substring(3))}"
+;
+
+method GetSysonym(Node: V8Brackets.BracketsNode): String
+    val HasSynonym = Node.GetChildNode([0]).AsNumber() != 0
+
+    if HasSynonym
+        return Node.GetChildNode([2]).AsString()
+    else
+        return ""
+    ;
+;

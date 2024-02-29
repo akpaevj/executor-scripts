@@ -1,0 +1,147 @@
+@Global
+structure BracketsNode
+    val IsValueNode: Boolean = False
+    val Value: String = ""
+    val Nodes: Array<BracketsNode> = []
+    var Length: Number = 0
+
+    @Global
+    method AsString(): String
+        ThrowIfNotValueNode()
+
+        if not Value.StartsWith("\"") and not Value.EndsWith("\"")
+            throw new IllegalStateException("Node is not a string literal node")
+        ;
+
+        return Value.Substring(1, Value.Length() - 1).Replace("\"\"", "\"")
+    ;
+
+    @Global
+    method AsNumber(): Number
+        ThrowIfNotValueNode()    
+        return new Number(Value)
+    ;
+
+    @Global
+    method AsUuid(): Uuid
+        ThrowIfNotValueNode()       
+        return new Uuid(Value)
+    ;
+
+    @Global
+    method AsBoolean(): Boolean
+        ThrowIfNotValueNode()
+        if Value == "1"
+            return True
+        else if Value == "0"
+            return False
+        else
+            throw new IllegalStateException("Failed to cast value to boolean type")
+        ;
+    ;
+
+    @Global
+    method GetChildNode(Address: Array<Number>): BracketsNode
+        var CurrentNode = this
+
+        for AddressItem in Address
+            CurrentNode = CurrentNode.Nodes[AddressItem]
+        ;
+
+        return CurrentNode
+    ;
+
+    method ThrowIfNotValueNode()
+        if not IsValueNode
+            throw new IllegalStateException("Node is not a value node")
+        ;
+    ;
+;
+
+@Global
+method ReadBlock(Content: String, StartIndex: Number = 0): BracketsNode
+    val Node = new BracketsNode()
+    var BlockStarted = False
+    var BlockFinished = False
+    var Index = StartIndex
+
+    while Index < Content.Length()
+        val Character = Content[Index]
+
+        if Character == "{"
+            if BlockStarted
+                val ChildNode = ReadBlock(Content, Index)
+                Node.Nodes.Add(ChildNode)
+
+                Index += ChildNode.Length
+            else
+                Index += 1
+                BlockStarted = True
+            ;
+        else if Character == "\""
+            // this is string literal
+            val EndIndex = GetTextValueEndIndex(Content, Index)
+            
+            val ChildNode = new BracketsNode(True, Content.Substring(Index, EndIndex), [], EndIndex - Index)
+            Node.Nodes.Add(ChildNode)
+
+            Index = EndIndex
+        else if Character == ","
+            Index += 1
+        else if Character == "}"
+            BlockFinished = True
+            Index += 1
+        else if Character == "\r" or Character == "\n"
+            Index += 1
+        else
+            // just read value
+            val EndIndex = GetValueEndIndex(Content, Index)
+
+            val ChildNode = new BracketsNode(True, Content.Substring(Index, EndIndex), [], EndIndex - Index)
+            Node.Nodes.Add(ChildNode)
+
+            Index = EndIndex
+        ;
+
+        if BlockFinished
+            Node.Length = Index - StartIndex
+            return Node
+        ;
+    ;
+
+    throw new IllegalStateException("Failed to read brackets node")
+;
+
+method GetValueEndIndex(Content: String, StartIndex: Number): Number
+    for Index = StartIndex to Content.Length() - 1 
+        val Character = Content[Index]
+
+        if Character == "," or Character == "}"
+            return Index
+        ;
+    ;
+
+    return -1
+;
+
+method GetTextValueEndIndex(Content: String, StartIndex: Number): Number
+    var Index = StartIndex
+    var QuotesCount = 0
+
+    while Index < Content.Length()
+        Index = Content.Find("\"", Index)
+        val NextChar = Index + 1 >= Content.Length() ? "u0" : Content[Index + 1]
+
+        if Content[Index] == "\""
+            QuotesCount += 1
+        ;
+
+        Index += 1
+
+        if QuotesCount > 1 and QuotesCount % 2 == 0 and NextChar != "\""
+            return Index
+        ;
+    ;
+
+    return -1
+;

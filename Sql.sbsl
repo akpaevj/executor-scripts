@@ -1,6 +1,15 @@
 #required IO.sbsl
 
 @Global
+method BuildConnection(
+    Server: String,
+    Database: String,
+    User: String,
+    Password: String): SqlConnection
+    return new SqlConnection("jdbc:sqlserver://${Server};encrypt=false;databaseName=${Database};user=${User};password=${Password};")
+;
+
+@Global
 method CreateDatabaseFromLastBackup(
     Server: String,
     Database: String,
@@ -127,16 +136,8 @@ method GetDatabaseDefaultLocations(Connection: SqlConnection): DefaultDatabaseFi
     val Result = GetDatabaseFileNames(Connection, "master")
 
     return new DefaultDatabaseFilesLocation(
-        IO.GetParentDirectory(Result.DataFilePath), 
-        IO.GetParentDirectory(Result.LogFilePath))    
-;
-
-method BuildConnection(
-    Server: String,
-    Database: String,
-    User: String,
-    Password: String): SqlConnection
-    return new SqlConnection("jdbc:sqlserver://${Server};encrypt=false;databaseName=${Database};user=${User};password=${Password};")
+        IO.GetParentPath(Result.DataFilePath), 
+        IO.GetParentPath(Result.LogFilePath))    
 ;
 
 structure DatabaseFiles

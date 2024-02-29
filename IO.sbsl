@@ -4,7 +4,17 @@ method GetFileName(Path: String): String
 ;
 
 @Global
-method GetParentDirectory(Path: String): String
+method GetFileExtension(Path: String): String
+    return new File(Path).Extension
+;
+
+@Global
+method GetParent(Path: String): String
+    return new File(Path).Directory.Name
+;
+
+@Global
+method GetParentPath(Path: String): String
     return new File(Path).Directory.Path
 ;
 
@@ -40,15 +50,25 @@ method TempPath(): String
 ;
 
 @Global
-method ReadFileToEnd(FilePath: String): String
+method ReadFileToEnd(FilePath: String, Encoding: Encoding = Encoding.Utf8): String
     val File = new File(FilePath)
     use Stream = File.OpenReadableStream()
 
-    return Stream.ReadAsString()   
+    return Stream.ReadAsString(Encoding)   
 ;
 
 @Global
-method WriteTextToFile(FilePath: String, Content: String)
+method WriteToFile(FilePath: String, Data: Bytes)
+    val File = new File(FilePath)
+    use Stream = File.OpenWritableStream()
+
+    Stream.Flush()
+
+    Stream.Write(Data)  
+;
+
+@Global
+method WriteToFile(FilePath: String, Content: String)
     val File = new File(FilePath)
     use Stream = File.OpenWritableStream()
 

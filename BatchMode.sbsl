@@ -3,6 +3,26 @@
 #required IO.sbsl
 #required SshAgentConnection.sbsl
 #required Net.sbsl
+#required Xml.sbsl
+
+@Global
+method NeedUpdate(
+    PlatformVersion: String,
+    Server: String,
+    Infobase: String,
+    User: String,
+    Password: String,
+    RequestedName: String,
+    RequestedVersion: String): Boolean
+    val ConfigurationInfo = GetConfigurationInfo(PlatformVersion, Server, Infobase, User, Password)
+    
+    if ConfigurationInfo.Name != RequestedName
+        throw new IllegalStateException("Requested configuration name is different from the target one")
+    ;
+
+    val VersionIsUpper = V8.VersionIsUpper(ConfigurationInfo.Version, RequestedVersion)
+    return VersionIsUpper
+;
 
 @Global
 method GetConfigurationInfo(
@@ -10,26 +30,44 @@ method GetConfigurationInfo(
     Server: String,
     Infobase: String,
     User: String,
-    Password: String)
-    val SshAgentBaseDir = Files.CreateTempDirectory()
+    Password: String): ConfigInfo?
+    val SshAgentBaseDir = Files.CreateTempDirectory("", True)
     val SshAgent = StartSshAgent(PlatformVersion, Server, Infobase, SshAgentBaseDir.Path)
     
     try 
-        if Net.LocalPortIsOpen(1543, 10)
-            val ConfigFile = Files.Create(IO.JoinPath(SshAgentBaseDir.Path, "0" + Files.SeparatorSymbol + "files-to-upload.txt"))
-            IO.WriteTextToFile(ConfigFile.Path, "Configuration")
+        if Net.LocalPortIsOpen(1543, 20)
+            Pause(Duration.OfMilliseconds(100))
+            
+            val ConfigFile = Files.CreateTempFile()
+            IO.WriteToFile(ConfigFile.Path, "Configuration")
+            SshAgentConnection.UploadFile(User, Password, ConfigFile.Path)
 
             use Connection = SshAgentConnection.Open(User, Password)
+            use Console = Connection.OpenConsole(True)
+            Console.PromptString = "designer> "
 
-            SshAgentConnection.ConnectIB(Connection)
-            SshAgentConnection.UploadConfiguration(Connection, ConfigFile.Name)
-            SshAgentConnection.Close(Connection)
+            SshAgentConnection.ConnectIB(Console)
+            SshAgentConnection.UploadConfiguration(Console, ConfigFile.Name)
+            SshAgentConnection.Close(Console)
+
+            val ConfigurationFile = SshAgentConnection.DownloadFile(User, Password, "Configuration.xml")
+            SshAgent.Stop()  
+            
+            val Reader = new XmlReader(IO.ReadFileToEnd(ConfigurationFile))
+            val Namespace = "http://v8.1c.ru/8.3/MDClasses"
+
+            val Name = Xml.GetValue(Reader, "MetaDataObject, Configuration, Properties, Name", Namespace)
+            val Version = Xml.GetValue(Reader, "Version", Namespace)
+
+            return new ConfigInfo(Name, Version)
         else
             Console.Write("Waiting for the opening port timeout is expired")
-        ;   
+        ;
     finally
         SshAgent.Stop()   
     ;
+
+    return Undefined
 ;
 
 @Global
@@ -88,7 +126,7 @@ method UpdateExtension(
     if new File(ExtensionPath).Extension.ToUpperCase() == "CFE"
         Args.Add("/LoadCfg\"${ExtensionPath}\" -Extension${ExtensionName}")
     else
-        Args.Add("/LoadConfigFromFiles\"${ExtensionPath}\" -Extension${ExtensionName} -NoCheck")
+        Args.Add("/LoadConfigFromFiles\"${ExtensionPath}\" -Extension${ExtensionName}")
     ;
 
     Args.Add("/UpdateDBCfg -Dynamic- -Server -SessionTerminate force")
