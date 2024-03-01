@@ -1,0 +1,143 @@
+#required Sql.sbsl
+#required BracketsParser.sbsl
+#required BytesHelper.sbsl
+#required V8BracketsHelper.sbsl
+#required AnotherFuckingOneCFormatReader.sbsl
+
+@Global
+enum DataLockingControlMode
+    None
+    Manual
+    Auto
+    AutoAndManual
+;
+
+@Global
+structure ConfigInfo
+    val Name: String
+    val Synonym: String
+    val Comment: String
+    val Supplier: String
+    val Version: String
+    req val DataLockingControlMode: DataLockingControlMode
+    val CompatibilityMode: String
+;
+
+@Global
+structure ExtensionInfo
+    val Name: String
+    val Synonym: String
+    val FileName: String
+    val ProtectFromDangerActions: Boolean
+    val GenerationVersion: Bytes
+    val SafeMode: Boolean
+    val Version: Bytes?
+    val Active: Boolean
+    val UseMainRolesForAllUsers: Boolean
+;
+
+@Global
+structure Class
+    req val Connection: SqlConnection
+
+    @Global
+    method GetConfigInfo(): ConfigInfo
+        val Root = GetConfigFileDataAsBracketsNode("root")
+        val Conf =  GetConfigFileDataAsBracketsNode(Root.GetChildNode([1]).Value)
+
+        return new ConfigInfo(
+            Conf.GetChildNode([3, 1, 1, 1, 1, 2]).AsString(),
+            V8BracketsHelper.GetSysonym(Conf.GetChildNode([3, 1, 1, 1, 1, 3])),
+            Conf.GetChildNode([3, 1, 1, 1, 1, 4]).AsString(),
+            Conf.GetChildNode([3, 1, 1, 14]).AsString(),
+            Conf.GetChildNode([3, 1, 1, 15]).AsString(),
+            DataLockingControlMode.Items()[Conf.GetChildNode([3, 1, 1, 17]).AsNumber()],
+            V8BracketsHelper.GetCompatibilityMode(Conf.GetChildNode([3, 1, 1, 26]))
+        )
+    ;
+
+    @Global
+    method GetExtensionInfo(ExtensionName: String): ExtensionInfo
+        val RawData = GetExtensionZippedInfo(ExtensionName)
+        val Reader = AnotherFuckingOneCFormatReader.NewInstance(RawData, 2)
+
+        val FileName = Reader.ReadString()
+        val ProtectFromDangerActions = Reader.ReadByte() == Bytes {A2}
+        val GenerationVersion = Reader.ReadVarbinary()
+        val SafeMode = Reader.ReadBoolean()
+
+        Reader.ReadBoolean() // unknown flag
+
+        val BracketsNode = Reader.ReadBracketsNode()
+        val Synonym = V8BracketsHelper.GetSysonym(BracketsNode.GetChildNode([2]))
+
+        var Version: Bytes? = Undefined
+        if not BytesHelper.Contains(Bytes{8182}, Reader.Peek())
+            // extension version is specified
+            Version = Reader.ReadVarbinary()
+        ;
+
+        Reader.ReadBoolean() // unknown flag
+
+        val Active = Reader.ReadBoolean()
+        val UseMainRolesForAllUsers = Reader.ReadBoolean()
+
+        Reader.ThrowIfNextIsNot(Bytes{20})
+
+        return new ExtensionInfo(
+            ExtensionName,
+            Synonym,
+            FileName,
+            ProtectFromDangerActions,
+            GenerationVersion,
+            SafeMode,
+            Version,
+            Active,
+            UseMainRolesForAllUsers)
+    ;
+
+    method GetParamsFileDataAsBracketsNode(FileName: String): BracketsParser.BracketsNode
+        return GetFileDataAsBracketsNode("Params", FileName)
+    ;
+
+    method GetConfigCASFileDataAsBracketsNode(FileName: String): BracketsParser.BracketsNode
+        return GetFileDataAsBracketsNode("ConfigCAS", FileName)
+    ;
+
+    method GetConfigFileDataAsBracketsNode(FileName: String): BracketsParser.BracketsNode
+        return GetFileDataAsBracketsNode("Config", FileName)
+    ;
+
+    method GetFileDataAsBracketsNode(TableName: String, FileName: String): BracketsParser.BracketsNode
+        val Data = GetFileDataAsString(TableName, FileName)
+        return BracketsParser.Parse(Data)
+    ;
+
+    method GetFileDataAsString(TableName: String, FileName: String): String
+        return new String(GetFileData(TableName, FileName), Encoding.Utf8)
+    ;
+
+    method GetFileData(TableName: String, FileName: String): Bytes
+        val Query = Connection.CreateQueryWithSelect("SELECT CAST(DECOMPRESS(0x1F8B0800000000000400 + [BinaryData]) AS VARBINARY(MAX)) as Data FROM [dbo].[%TableName] WITH(NOLOCK) WHERE [FileName] = N'%FileName'")
+
+        use QResult = Query.Execute()
+        QResult.Next()
+
+        val Result = QResult.Get("Data") as Bytes
+
+        if Result.Length() > 3 and Result.GetRange(0, 3) == Bytes{EF BB BF}
+            return Result.GetRange(3)
+        else
+            return Result
+        ;
+    ;
+
+    method GetExtensionZippedInfo(ExtensionName: String): Bytes
+        val Query = Connection.CreateQueryWithSelect("SELECT [_ExtensionZippedInfo] as Data FROM [dbo].[_ExtensionsInfo] WITH(NOLOCK) WHERE [_ExtName] = N'%ExtensionName'")
+
+        use QResult = Query.Execute()
+        QResult.Next()
+
+        return QResult.Get("Data") as Bytes
+    ;
+;

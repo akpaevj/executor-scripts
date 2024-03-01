@@ -1,9 +1,7 @@
-#required Path.sbsl
-#required Zip.sbsl
+#required Common/Path.sbsl
+#required Common/Zip.sbsl
 
-method BuildXmlFiles(
-    CliPath: String,
-    ProjectPath: String): Number
+method BuildXmlFiles(CliPath: String, ProjectPath: String, DestinationFolder: String = "", ArchiveName: String = ""): Number
     if not Path.Exists(CliPath)
         throw new IllegalArgumentException("Couldn't find edt cli executable by passed path")
     ;
@@ -12,6 +10,18 @@ method BuildXmlFiles(
         throw new IllegalArgumentException("Couldn't find project folder by passed path")
     ;
 
+    if DestinationFolder == ""
+        DestinationFolder = new File(ProjectPath).Path
+    ;
+
+    if not Path.Exists(DestinationFolder)
+        throw new IllegalArgumentException("Couldn't find destination folder by passed path")
+    ;
+
+    if ArchiveName == ""
+        ArchiveName = new File(ProjectPath).Name
+    ;
+    
     val DataPath = Files.CreateTempDirectory()
     val BuildPath = Files.CreateTempDirectory()
 
@@ -32,7 +42,7 @@ method BuildXmlFiles(
 
     Files.Delete(DataPath)
 
-    val ArchivePath = Path.Join(new File(ProjectPath).Path, "${new File(ProjectPath).Name}.zip")
+    val ArchivePath = Path.Join(DestinationFolder, "%ArchiveName.zip")
     Zip.ZipFolder(BuildPath.Path, ArchivePath)
     Console.Write("Zipped project path: ${ArchivePath}")
 

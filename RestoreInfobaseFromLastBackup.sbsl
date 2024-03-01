@@ -1,0 +1,18 @@
+#required Common/Sql.sbsl
+#required Common/Ras.sbsl
+
+method Script(
+    Server: String, 
+    SourceInfobase: String, 
+    User: String, 
+    Password: String, 
+    InfobaseName: String,
+    RasAddress = "localhost",
+    RasPort = 1545)
+
+    Console.Write("Restoring database from the last backup")
+    Sql.CreateDatabaseFromLastBackup(Server, SourceInfobase, User, Password, InfobaseName)
+
+    Console.Write("Register infobase in the cluster")
+    Ras.CreateInfobaseIfNotExists(InfobaseName, Server, User, Password, RasAddress, RasPort)
+;
