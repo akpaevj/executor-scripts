@@ -1,6 +1,5 @@
 #required BytesReader.sbsl
 #required BytesHelper.sbsl
-#required StringHelper.sbsl
 #required BracketsParser.sbsl
 
 // This format is used in ExtensionZippedInfo field
@@ -64,7 +63,7 @@ structure Class
             Skip()
             val Length = BytesHelper.ToChar(ReadByte())
             val Data = ReadBytes(Length * 2)  
-            return StringHelper.FromNChar(Data) 
+            return FromNChar(Data) 
         else
             val Marker = ReadByte()
             throw new IllegalFormatException("Unexpected character: ${Marker}. Expected: 0x9A or 0x97")
@@ -84,6 +83,25 @@ structure Class
         if Next != Pattern
             throw new IllegalFormatException("Unexpected character: ${Next}. Expected: ${Pattern}")
         ;
+    ;
+
+    method FromNChar(Data: Bytes): String
+        var Result = ""
+        var Offset = 0
+
+        while Offset < Data.Length() - 1
+            val Part = Data.GetRange(Offset, Offset + 2)
+            val Reversed = BytesHelper.Reverse(Part)
+            val TrimmedPart = BytesHelper.Trim(Reversed, Bytes{00})
+
+            val Encoding = TrimmedPart.Length() == 1 ? Encoding.Utf8 : Encoding.Utf16
+
+            Result += new String(TrimmedPart, Encoding)
+
+            Offset += 2
+        ;
+
+        return Result
     ;
 ;
 

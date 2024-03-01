@@ -102,7 +102,7 @@ method GetExtensionInfo(Connection: SqlConnection, ExtensionName: String): Exten
 ;
 
 @Global
-method GetExtensionInfo2(Server: String,
+method GetExtensionInfo(Server: String,
     Database: String,
     User: String,
     Password: String,
