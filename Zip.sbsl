@@ -1,4 +1,4 @@
-#required IO.sbsl
+#required Path.sbsl
 
 @Global
 method ZipFolder(FolderPath: String, ArchivePath: String, ZipChildren: Boolean = True)
@@ -15,10 +15,10 @@ method ZipFolder(FolderPath: String, ArchivePath: String, ZipChildren: Boolean =
     Writer.Write()
 ;
 
-method AddToZipArchive(FileToZipping: File, Writer: ZipWriter, Path: String = "")
+method AddToZipArchive(FileToZipping: File, Writer: ZipWriter, RelativePath: String = "")
     if FileToZipping.IsFile()
-        Writer.Add(FileToZipping.OpenReadableStream(), IO.JoinPath(Path, FileToZipping.Name))
+        Writer.Add(FileToZipping.OpenReadableStream(), Path.Join(RelativePath, FileToZipping.Name))
     else
-        FileToZipping.Children.ForEach(Child -> AddToZipArchive(Child, Writer, IO.JoinPath(Path, FileToZipping.Name)))
+        FileToZipping.Children.ForEach(Child -> AddToZipArchive(Child, Writer, Path.Join(RelativePath, FileToZipping.Name)))
     ;
 ;

@@ -1,8 +1,8 @@
 #required Sql.sbsl
-#required Classes/V8BracketsParser.sbsl
-#required Helpers/BytesHelper.sbsl
-#required Helpers/V8BracketsHelper.sbsl
-#required Classes/AnotherFuckingOneCFormatReader.sbsl
+#required BracketsParser.sbsl
+#required BytesHelper.sbsl
+#required V8BracketsHelper.sbsl
+#required AnotherFuckingOneCFormatReader.sbsl
 
 enum DataLockingControlMode
     None
@@ -87,7 +87,7 @@ method GetExtensionInfo(Connection: SqlConnection, ExtensionName: String): Exten
     val Active = Reader.ReadBoolean()
     val UseMainRolesForAllUsers = Reader.ReadBoolean()
 
-    Reader.AssertNextIs(Bytes{20}) // end of data
+    Reader.ThrowIfNextIsNot(Bytes{20})
 
     return new ExtensionInfo(
         ExtensionName,
@@ -111,21 +111,21 @@ method GetExtensionInfo2(Server: String,
     return GetExtensionInfo(Connection, ExtensionName)
 ;
 
-method GetParamsFileDataAsBracketsNode(Connection: SqlConnection, FileName: String): V8BracketsParser.BracketsNode
+method GetParamsFileDataAsBracketsNode(Connection: SqlConnection, FileName: String): BracketsParser.BracketsNode
     return GetFileDataAsBracketsNode(Connection, "Params", FileName)
 ;
 
-method GetConfigCASFileDataAsBracketsNode(Connection: SqlConnection, FileName: String): V8BracketsParser.BracketsNode
+method GetConfigCASFileDataAsBracketsNode(Connection: SqlConnection, FileName: String): BracketsParser.BracketsNode
     return GetFileDataAsBracketsNode(Connection, "ConfigCAS", FileName)
 ;
 
-method GetConfigFileDataAsBracketsNode(Connection: SqlConnection, FileName: String): V8BracketsParser.BracketsNode
+method GetConfigFileDataAsBracketsNode(Connection: SqlConnection, FileName: String): BracketsParser.BracketsNode
     return GetFileDataAsBracketsNode(Connection, "Config", FileName)
 ;
 
-method GetFileDataAsBracketsNode(Connection: SqlConnection, TableName: String, FileName: String): V8BracketsParser.BracketsNode
+method GetFileDataAsBracketsNode(Connection: SqlConnection, TableName: String, FileName: String): BracketsParser.BracketsNode
     val Data = GetFileDataAsString(Connection, TableName, FileName)
-    return V8BracketsParser.Parse(Data)
+    return BracketsParser.Parse(Data)
 ;
 
 method GetFileDataAsString(Connection: SqlConnection, TableName: String, FileName: String): String

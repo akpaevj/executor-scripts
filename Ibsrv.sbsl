@@ -1,4 +1,4 @@
-#required IO.sbsl
+#required Path.sbsl
 #required V8.sbsl
 #required Processes.sbsl
 #required Services.sbsl
@@ -27,7 +27,7 @@ method RegisterService(
     val ServiceName = GetServiceName(InstanceId)
     val ServiceDesc = GetServiceDescription(InstanceId)
 
-    val NewConfigPath = IO.JoinPath(IO.GetParentDirectory(TemplateConfigPath), "${InstanceId}.yaml")
+    val NewConfigPath = Path.Join(Path.GetParentPath(TemplateConfigPath), "${InstanceId}.yaml")
     Files.Copy(TemplateConfigPath, NewConfigPath)
     Yaml.ReplaceValue(NewConfigPath, "infobase.id", new Uuid().ToString())
     Yaml.ReplaceValue(NewConfigPath, "infobase.name", InstanceId)
@@ -57,7 +57,7 @@ method RemoveService(InstanceId: String): Number
 ;
 
 method GetServerDataPath(InstanceId: String): String
-    return IO.JoinPath(ExecutionEnvironment.GetVariable("APPDATA"), "StandaloneService${Files.SeparatorSymbol}${InstanceId}")
+    return Path.Join(ExecutionEnvironment.GetVariable("APPDATA"), "StandaloneService${Files.SeparatorSymbol}${InstanceId}")
 ;
 
 method GetServiceBinPath(

@@ -1,0 +1,27 @@
+@Global
+method ReadFileToEnd(FilePath: String, Encoding: Encoding = Encoding.Utf8): String
+    val File = new File(FilePath)
+    use Stream = File.OpenReadableStream()
+
+    return Stream.ReadAsString(Encoding)   
+;
+
+@Global
+method WriteToFile(FilePath: String, Data: Bytes)
+    val File = new File(FilePath)
+    use Stream = File.OpenWritableStream()
+
+    Stream.Flush()
+
+    Stream.Write(Data)  
+;
+
+@Global
+method WriteToFile(FilePath: String, Content: String)
+    val File = new File(FilePath)
+    use Stream = File.OpenWritableStream()
+
+    Stream.Flush()
+
+    Stream.Write(Content)  
+;

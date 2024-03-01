@@ -1,0 +1,50 @@
+@Global
+method GetFileName(Path: String): String
+    return new File(Path).Name
+;
+
+@Global
+method GetFileExtension(Path: String): String
+    return new File(Path).Extension
+;
+
+@Global
+method GetParent(Path: String): String
+    return new File(Path).Directory.Name
+;
+
+@Global
+method GetParentPath(Path: String): String
+    return new File(Path).Directory.Path
+;
+
+@Global
+method Join(Path: String, Path1: String): String
+    if Path.EndsWith("\\") or Path.EndsWith("/")
+        return Path + Path1
+    else
+        return Path + Files.SeparatorSymbol + Path1
+    ;
+;
+
+@Global
+method Join(Path: String, Path1: String, Path2: String): String
+    val Result = Join(Path, Path1)
+    return Join(Result, Path2)
+;
+
+@Global
+method Join(Path: String, Path1: String, Path2: String, Path3: String): String
+    val Result = Join(Path, Path1, Path2)
+    return Join(Result, Path3)
+;
+
+@Global
+method Exists(Path: String): Boolean
+    return new File(Path).Exists()
+;
+
+@Global
+method TempPath(): String
+    return ExecutionEnvironment.GetProperty("java.io.tmpdir")    
+;

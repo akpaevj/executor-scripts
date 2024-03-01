@@ -1,8 +1,8 @@
-#required IO.sbsl
+#required FilesHelper.sbsl
 
 @Global
 method ReplaceValue(FilePath: String, KeyPath: String, Value: String)
-     var FileContent = IO.ReadFileToEnd(FilePath)
+     var FileContent = FilesHelper.ReadFileToEnd(FilePath)
 
     var PathParts = KeyPath.Split(".")
     var IndexInContent = 0
@@ -22,5 +22,5 @@ method ReplaceValue(FilePath: String, KeyPath: String, Value: String)
     var NewData = "${ToFindSpan} ${Value}"
 
     FileContent = FileContent.ReplaceRange(NewData, LastPartStartIndex, LastPartEndIndex)
-    IO.WriteTextToFile(FilePath, FileContent)
+    FilesHelper.WriteToFile(FilePath, FileContent)
 ;

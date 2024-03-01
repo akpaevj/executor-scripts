@@ -1,12 +1,12 @@
-#required ../Classes/V8BracketsParser.sbsl
+#required BracketsParser.sbsl
 
 @Global
-method GetCompatibilityMode(Node: V8BracketsParser.BracketsNode): String
+method GetCompatibilityMode(Node: BracketsParser.BracketsNode): String
     return "${new Number(Node.Value.Substring(0, 1))}.${new Number(Node.Value.Substring(1, 3))}.${new Number(Node.Value.Substring(3))}"
 ;
 
 @Global
-method GetSysonym(Node: V8BracketsParser.BracketsNode): String
+method GetSysonym(Node: BracketsParser.BracketsNode): String
     val HasSynonym = Node.GetChildNode([0]).AsNumber() != 0
 
     if HasSynonym

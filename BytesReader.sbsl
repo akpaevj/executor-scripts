@@ -4,7 +4,7 @@ structure Class
     var CurrentIndex = 0
 
     @Global
-    method Read(Count: Number): Bytes
+    method Read(Count: Number = 1): Bytes
         val StartIndex = CurrentIndex
         val EndIndex = StartIndex + Count
 

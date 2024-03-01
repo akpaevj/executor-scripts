@@ -1,4 +1,4 @@
-#required IO.sbsl
+#required Path.sbsl
 
 @Global
 method BuildConnection(
@@ -120,8 +120,8 @@ method GetDatabaseFileNames(Connection: SqlConnection, Database: String): Databa
 
 method RestoreBackup(Connection: SqlConnection, DatabaseFiles: DatabaseFiles, FullBackup: FullBackup, NewDatabaseName: String)
     val DefaultLocations = GetDatabaseDefaultLocations(Connection)
-    val MdfPath = IO.JoinPath(DefaultLocations.Data, "${NewDatabaseName}.mdf")
-    val LogPath = IO.JoinPath(DefaultLocations.Log, "${NewDatabaseName}_log.ldf")
+    val MdfPath = Path.Join(DefaultLocations.Data, "${NewDatabaseName}.mdf")
+    val LogPath = Path.Join(DefaultLocations.Log, "${NewDatabaseName}_log.ldf")
     
     val Query = Connection.CreateQueryWithoutSelect(
         "RESTORE DATABASE [${NewDatabaseName}] FROM  DISK = N'${FullBackup.Path}' 
@@ -136,8 +136,8 @@ method GetDatabaseDefaultLocations(Connection: SqlConnection): DefaultDatabaseFi
     val Result = GetDatabaseFileNames(Connection, "master")
 
     return new DefaultDatabaseFilesLocation(
-        IO.GetParentPath(Result.DataFilePath), 
-        IO.GetParentPath(Result.LogFilePath))    
+        Path.GetParentPath(Result.DataFilePath), 
+        Path.GetParentPath(Result.LogFilePath))    
 ;
 
 structure DatabaseFiles

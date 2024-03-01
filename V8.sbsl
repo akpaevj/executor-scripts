@@ -1,4 +1,4 @@
-#required IO.sbsl 
+#required Path.sbsl 
 #required Net.sbsl
 
 @Global
@@ -53,14 +53,14 @@ method GetInstalledPlatforms(): Array<V8Platform>
         val Platform = new V8Platform()
         Platform.Version = Child.Name
         Platform.Architecture = Arch.X64
-        Platform.BinPath = IO.JoinPath(Child.Path, "bin")
-        Platform.ExecutablePath = IO.JoinPath(Platform.BinPath, "1cv8.exe")
+        Platform.BinPath = Path.Join(Child.Path, "bin")
+        Platform.ExecutablePath = Path.Join(Platform.BinPath, "1cv8.exe")
         
-        val IbsrvExecutable = new File(IO.JoinPath(Platform.BinPath, "ibsrv.exe"))
+        val IbsrvExecutable = new File(Path.Join(Platform.BinPath, "ibsrv.exe"))
         if IbsrvExecutable.Exists()
             Platform.HasStandaloneServer = True
             Platform.IbsrvPath = IbsrvExecutable.Path
-            Platform.IbcmdPath = IO.JoinPath(Platform.BinPath, "ibcmd.exe")
+            Platform.IbcmdPath = Path.Join(Platform.BinPath, "ibcmd.exe")
         ;
 
         Items.Add(Platform)

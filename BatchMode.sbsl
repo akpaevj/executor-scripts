@@ -1,6 +1,6 @@
 #required Processes.sbsl
 #required V8.sbsl
-#required IO.sbsl
+#required FilesHelper.sbsl
 #required SshAgentConnection.sbsl
 #required Net.sbsl
 #required Xml.sbsl
@@ -39,7 +39,7 @@ method GetConfigurationInfo(
             Pause(Duration.OfMilliseconds(100))
             
             val ConfigFile = Files.CreateTempFile()
-            IO.WriteToFile(ConfigFile.Path, "Configuration")
+            FilesHelper.WriteToFile(ConfigFile.Path, "Configuration")
             SshAgentConnection.UploadFile(User, Password, ConfigFile.Path)
 
             use Connection = SshAgentConnection.Open(User, Password)
@@ -53,7 +53,7 @@ method GetConfigurationInfo(
             val ConfigurationFile = SshAgentConnection.DownloadFile(User, Password, "Configuration.xml")
             SshAgent.Stop()  
             
-            val Reader = new XmlReader(IO.ReadFileToEnd(ConfigurationFile))
+            val Reader = new XmlReader(FilesHelper.ReadFileToEnd(ConfigurationFile))
             val Namespace = "http://v8.1c.ru/8.3/MDClasses"
 
             val Name = Xml.GetValue(Reader, "MetaDataObject, Configuration, Properties, Name", Namespace)

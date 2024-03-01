@@ -91,6 +91,26 @@ method Trim(Data: Bytes, TrimBytes: Bytes): Bytes
 ;
 
 @Global
+method Reverse(Data: Bytes): Bytes
+    if Data.Length() == 0
+        return Data
+    ;
+
+    use OutStream = new TemporaryWritableStream(Data.Size())
+
+    var Index = Data.Length() - 1
+
+    while Index >= 0
+        OutStream.Write(At(Data, Index))
+        Index -= 1
+    ;
+
+    use InStream = OutStream.OpenReadableStream()
+
+    return InStream.ReadAsBytes()
+;
+
+@Global
 method ToChar(Data: Bytes): Number
     if Data.Length() != 1
         throw new IllegalStateException("Data length must be 1")
@@ -125,24 +145,4 @@ method ToChar(Data: Bytes): Number
     ;
 
     return Result
-;
-
-@Global
-method Reverse(Data: Bytes): Bytes
-    if Data.Length() == 0
-        return Data
-    ;
-
-    use OutStream = new TemporaryWritableStream(Data.Size())
-
-    var Index = Data.Length() - 1
-
-    while Index >= 0
-        OutStream.Write(At(Data, Index))
-        Index -= 1
-    ;
-
-    use InStream = OutStream.OpenReadableStream()
-
-    return InStream.ReadAsBytes()
 ;
