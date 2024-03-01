@@ -1,0 +1,99 @@
+#required BytesReader.sbsl
+#required ../Helpers/BytesHelper.sbsl
+#required ../Helpers/StringHelper.sbsl
+#required V8BracketsParser.sbsl
+
+// This format is used in ExtensionZippedInfo field
+@Global
+structure Class
+    req val Reader: BytesReader.Class
+
+    @Global
+    method Skip(Count: Number = 1)
+        Reader.Read(Count)        
+    ;
+
+    @Global
+    method AssertNextIs(Pattern: Bytes)
+        val Data = Reader.Read(Pattern.Length())
+
+        if Data != Pattern
+            throw new IllegalFormatException("Unexpected binary data: ${Data}, Expected: ${Pattern}")
+        ;     
+    ;
+
+    @Global
+    method ReadByte(): Bytes
+        return Reader.Read(1)        
+    ;
+
+    @Global
+    method Peek(): Bytes
+        return Reader.Peek()
+    ;
+
+    @Global
+    method ReadBoolean(): Boolean
+        val Value = Reader.Read(1)
+
+        case Value
+        when Bytes{81}
+            return False
+        when Bytes{82}
+            return True
+        else
+            throw new IllegalFormatException("Unexpected boolean character: ${Value}")
+        ;     
+    ;
+
+    @Global
+    method ReadBytes(Count: Number): Bytes
+        return Reader.Read(Count)        
+    ;
+
+    @Global
+    method ReadVarbinary(): Bytes
+        val Marker = ReadByte()
+        val Length = BytesHelper.ToChar(ReadByte())
+
+        if Marker == Bytes{9A}
+            return ReadBytes(Length)
+        else
+            throw new IllegalFormatException("Unexpected character: ${Marker}. Expected: 0x9A")
+        ;     
+    ;
+
+    @Global
+    method ReadString(): String
+        case Reader.Peek()
+        when Bytes{9A}
+            val Data = ReadVarbinary()
+            return Data.ToString()
+        when Bytes{97}
+            Skip()
+            val Length = BytesHelper.ToChar(ReadByte())
+            val Data = ReadBytes(Length * 2)  
+            return StringHelper.FromNChar(Data) 
+        else
+            val Marker = ReadByte()
+            throw new IllegalFormatException("Unexpected character: ${Marker}. Expected: 0x9A or 0x97")
+        ;  
+    ;
+    
+    @Global
+    method ReadBracketsNode(): V8BracketsParser.BracketsNode
+        val Content = ReadString()
+        return V8BracketsParser.Parse(Content)
+    ;
+;
+
+@Global
+method NewInstance(Data: Bytes, StartIndex = 0): AnotherFuckingOneCFormatReader.Class
+    val Reader = BytesReader.NewInstance(Data, StartIndex)
+    return AnotherFuckingOneCFormatReader.NewInstance(Reader)
+;
+
+@Global
+method NewInstance(Reader: BytesReader.Class): AnotherFuckingOneCFormatReader.Class
+    return new Class(Reader)
+;

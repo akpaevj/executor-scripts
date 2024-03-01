@@ -1,0 +1,148 @@
+@Global
+method IndexOf(Data1: Bytes, Data2: Bytes): Number
+    var StartIndex = -1
+    var Data2Index = 0
+
+    for Data1Index = 0 to Data1.Length() - 1
+        val Data1Char = Data1.GetRange(Data1Index, Data1Index + 1)
+        val Data2Char = Data2.GetRange(Data2Index, Data2Index + 1)
+
+        if Data1Char != Data2Char and StartIndex != -1
+            // doesn't match pattern
+            StartIndex = -1
+            Data2Index = 0
+            continue
+        ;
+
+        if Data1Char == Data2Char
+            if StartIndex == -1
+                StartIndex = Data1Index
+            ;
+            Data2Index += 1
+        ;
+
+        if Data2Index >= Data2.Length()
+            break
+        ;
+    ;
+
+    return StartIndex
+;
+
+@Global
+method Contains(Data1: Bytes, Data2: Bytes): Boolean
+    return IndexOf(Data1, Data2) != -1
+;
+
+@Global
+method StartsWith(Data1: Bytes, Data2: Bytes): Boolean
+    return IndexOf(Data1, Data2) == 0
+;
+
+@Global
+method EndsWith(Data1: Bytes, Data2: Bytes): Boolean
+    val Index = IndexOf(Data1, Data2) 
+    return Index + Data2.Length() == Data1.Length()
+;
+
+@Global
+method At(Data: Bytes, Index: Number): Bytes
+    return Data.GetRange(Index, Index + 1)
+;
+
+@Global
+method TrimStart(Data: Bytes, TrimBytes: Bytes): Bytes
+    if Data.Length() < TrimBytes.Length()
+        return Data
+    ;
+
+    var StartOffset = 0
+
+    while StartsWith(Data.GetRange(StartOffset), TrimBytes)
+        StartOffset += TrimBytes.Length()
+
+        if TrimBytes.Length() > Data.Length() - StartOffset
+            break
+        ;
+    ;
+
+    return Data.GetRange(StartOffset)
+;
+
+@Global
+method TrimEnd(Data: Bytes, TrimBytes: Bytes): Bytes
+    if Data.Length() < TrimBytes.Length()
+        return Data
+    ;
+
+    var EndOffset = 0
+
+    while EndsWith(Data.GetRange(0, Data.Length() - EndOffset), TrimBytes)
+        EndOffset += TrimBytes.Length()
+    ;
+
+    return Data.GetRange(0, Data.Length() - EndOffset)
+;
+
+@Global
+method Trim(Data: Bytes, TrimBytes: Bytes): Bytes
+    var Result = TrimStart(Data, TrimBytes)
+    return TrimEnd(Result, TrimBytes)
+;
+
+@Global
+method ToChar(Data: Bytes): Number
+    if Data.Length() != 1
+        throw new IllegalStateException("Data length must be 1")
+    ;
+
+    val Str = Data.ToString()
+    var Index = Str.Length() - 1
+    var Result = 0
+
+    while Index >= 0
+        val Character = Str.CharAt(Index)
+        val Multiplier = Pow(16, Str.Length() - 1 - Index)
+
+        case Character.ToUpperCase()
+        when "A"
+            Result += 10 * Multiplier
+        when "B"
+            Result += 11 * Multiplier
+        when "C"
+            Result += 12 * Multiplier
+        when "D"
+            Result += 13 * Multiplier
+        when "E"
+            Result += 14 * Multiplier
+        when "F"
+            Result += 15 * Multiplier
+        else
+            Result += new Number(Character) * Multiplier
+        ;
+
+        Index -= 1
+    ;
+
+    return Result
+;
+
+@Global
+method Reverse(Data: Bytes): Bytes
+    if Data.Length() == 0
+        return Data
+    ;
+
+    use OutStream = new TemporaryWritableStream(Data.Size())
+
+    var Index = Data.Length() - 1
+
+    while Index >= 0
+        OutStream.Write(At(Data, Index))
+        Index -= 1
+    ;
+
+    use InStream = OutStream.OpenReadableStream()
+
+    return InStream.ReadAsBytes()
+;

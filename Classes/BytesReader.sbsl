@@ -1,0 +1,45 @@
+@Global
+structure Class
+    val Data: Bytes
+    var CurrentIndex = 0
+
+    @Global
+    method Read(Count: Number): Bytes
+        val StartIndex = CurrentIndex
+        val EndIndex = StartIndex + Count
+
+        val CanRead = Data.Length() - CurrentIndex
+
+        if CanRead < Count
+            throw new IllegalArgumentException("Specified count is more than bytes can be read")
+        ;
+
+        var DataPart = Bytes{}
+        
+        if (EndIndex == Data.Length())
+            DataPart = Data.GetRange(StartIndex)
+        else
+            DataPart = Data.GetRange(StartIndex, EndIndex)
+        ;
+
+        CurrentIndex = EndIndex
+
+        return DataPart
+    ;
+
+    @Global
+    method Peek(): Bytes
+        val CanRead = Data.Length() - 1 - CurrentIndex
+
+        if CanRead <= 0
+            throw new IllegalArgumentException("End of bytes stream")
+        ;
+
+        return Data.GetRange(CurrentIndex, CurrentIndex + 1)
+    ;
+;
+
+@Global
+method NewInstance(Data: Bytes, StartIndex = 0): Class 
+    return new Class(Data, StartIndex)
+;
