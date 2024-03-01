@@ -1,0 +1,44 @@
+#required Common/Log.sbsl
+#required Common/V8Database.sbsl
+#required Common/Sql.sbsl
+#required Common/V8.sbsl
+#required Common/Path.sbsl
+#required Common/BatchMode.sbsl
+#required Common/Ras.sbsl
+
+method Script(
+    Server: String, 
+    Infobase: String, 
+    User: String, 
+    Password: String,
+    SqlUser: String,
+    SqlPassword: String,
+    RequiredVersion: String,
+    TemplatesPath: String,
+    AccessCode: String,
+    PlatformVersion: String = "")
+    use Connection = Sql.BuildConnection(Server, Infobase, SqlUser, SqlPassword)
+    val Database = V8Database.NewInstance(Connection)
+    val ConfigInfo = Database.GetConfigInfo()
+
+    if V8.VersionIsUpper(ConfigInfo.Version, RequiredVersion)
+        val CfuPath = Path.Join(Path.Join(TemplatesPath, RequiredVersion.Replace(".", "_")), "1cv8.cfu")
+
+        if Path.Exists(CfuPath)
+            Log.i("Using CFU path: $CfuPath")
+        else
+            throw new IllegalStateException("Couldn't find CFU file of required version $RequiredVersion by path: %CfuPath")
+        ;
+
+        Log.i("Blocking connections")
+        Ras.BlockConnections(Infobase, User, Password, AccessCode)
+
+        Log.i("Updating configuration (%Server/%Infobase)")
+        BatchMode.UpdateConfiguration(Server, Infobase, User, Password, AccessCode, CfuPath, PlatformVersion)
+
+        Log.i("Unblocking connections")
+        Ras.UnblockConnections(Infobase, User, Password, AccessCode)
+    else
+        Log.i("It doesn't need to update configuration (Current: ${ConfigInfo.Version}, Required: %RequiredVersion)")
+    ;
+;

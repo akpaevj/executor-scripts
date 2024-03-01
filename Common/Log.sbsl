@@ -1,0 +1,67 @@
+@Global
+enum LogLevel
+    Trace,
+    Debug,
+    Information,
+    Warning,
+    Error,
+    Critical,
+    None
+;
+
+@Global
+method t(Message: String)
+    Log(LogLevel.Trace, Message)
+;
+
+@Global
+method d(Message: String)
+    Log(LogLevel.Debug, Message)
+;
+
+@Global
+method i(Message: String)
+    Log(LogLevel.Information, Message)
+;
+
+@Global
+method w(Message: String)
+    Log(LogLevel.Warning, Message)
+;
+
+@Global
+method e(Message: String)
+    Log(LogLevel.Error, Message)
+;
+
+@Global
+method c(Message: String)
+    Log(LogLevel.Critical, Message)
+;
+
+method Log(Level: LogLevel, Message: String)
+    var LevelString = ""
+    
+    case Level
+    when LogLevel.Trace
+        LevelString = "TRACE"
+    when LogLevel.Debug
+        LevelString = "DEBUG"
+    when LogLevel.Information
+        LevelString = "INFO"
+    when LogLevel.Warning
+        LevelString = "WARN"
+    when LogLevel.Error
+        LevelString = "ERROR"
+    when LogLevel.Critical
+        LevelString = "CRIT"
+    ;
+
+    val Content = "${DateTime.Now()} - %LevelString - %Message"
+    
+    if Level.Index >= LogLevel.Error.Index
+        Console.WriteError(Content)
+    else
+        Console.Write(Content)
+    ;
+;

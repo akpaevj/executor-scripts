@@ -6,31 +6,24 @@
 #required Xml.sbsl
 
 @Global
-method NeedUpdate(
-    PlatformVersion: String,
+method NeedUpdateConfiguration(
     Server: String,
     Infobase: String,
     User: String,
     Password: String,
-    RequestedName: String,
-    RequestedVersion: String): Boolean
-    val ConfigurationInfo = GetConfigurationInfo(PlatformVersion, Server, Infobase, User, Password)
-    
-    if ConfigurationInfo.Name != RequestedName
-        throw new IllegalStateException("Requested configuration name is different from the target one")
-    ;
-
-    val VersionIsUpper = V8.VersionIsUpper(ConfigurationInfo.Version, RequestedVersion)
-    return VersionIsUpper
+    RequestedVersion: String,
+    PlatformVersion = ""): Boolean
+    val ConfigurationInfo = GetConfigurationInfo(Server, Infobase, User, Password, PlatformVersion)
+    return V8.VersionIsUpper(ConfigurationInfo.Version, RequestedVersion)
 ;
 
 @Global
 method GetConfigurationInfo(
-    PlatformVersion: String,
     Server: String,
     Infobase: String,
     User: String,
-    Password: String): ConfigInfo?
+    Password: String,
+    PlatformVersion = ""): ConfigInfo?
     val SshAgentBaseDir = Files.CreateTempDirectory("", True)
     val SshAgent = StartSshAgent(PlatformVersion, Server, Infobase, SshAgentBaseDir.Path)
     
@@ -72,13 +65,13 @@ method GetConfigurationInfo(
 
 @Global
 method UpdateConfiguration(
-    PlatformVersion: String,
     Server: String,
     Infobase: String,
     User: String,
     Password: String,
     AccessCode: String,
-    CfuPath: String): Number
+    CfuPath: String,
+    PlatformVersion = ""): Number
     val Platform = V8.GetInstalledPlatform(PlatformVersion)
 
     val OutFile = Files.CreateTempFile()
@@ -102,14 +95,14 @@ method UpdateConfiguration(
 
 @Global
 method UpdateExtension(
-    PlatformVersion: String,
     Server: String,
     Infobase: String,
     User: String,
     Password: String,
     AccessCode: String,
     ExtensionName: String,
-    ExtensionPath: String): Number
+    ExtensionPath: String,
+    PlatformVersion = ""): Number
     val Platform = V8.GetInstalledPlatform(PlatformVersion)
 
     val OutFile = Files.CreateTempFile()

@@ -141,3 +141,8 @@ structure Class
         return QResult.Get("Data") as Bytes
     ;
 ;
+
+@Global
+method NewInstance(Connection: SqlConnection): Class 
+    return new Class(Connection)
+;
