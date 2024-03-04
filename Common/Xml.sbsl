@@ -1,11 +1,12 @@
 @Global
+method GetValue(FilePath: String, Path: String, Namespace: String = ""): String?
+    val Reader = new XmlReader(FilePath)
+    return GetValue(Reader, Path, Namespace)
+;
+
+@Global
 method GetValue(Reader: XmlReader, Path: String, Namespace: String = ""): String?
-    val PathParts = Path.Split(",")
-
-    for PathPart in PathParts
-        Reader.NextTo(PathPart.Trim(), Namespace)
-    ;
-
+    Path.Split(",").ForEach(c -> Reader.NextTo(c.Trim(), Namespace))
     Reader.Next()
 
     if Reader.HasValue
