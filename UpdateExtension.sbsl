@@ -25,6 +25,7 @@ method Script(
         return 1
     ;
 
+    Log.e("Unpacking the extension archive")
     val ExtensionFolder = Files.CreateTempDirectory()
     val ExtensionArchive = new ZipFile(ExtensionPath)
     ExtensionArchive.ExtractAll(ExtensionFolder)
