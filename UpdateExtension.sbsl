@@ -5,6 +5,7 @@
 #required Common/Path.sbsl
 #required Common/BatchMode.sbsl
 #required Common/Ras.sbsl
+#required Common/Zip.sbsl
 
 // Method expects to get a path to the zip archive in the "ExtensionPath" parameter
 method Script(
@@ -20,15 +21,14 @@ method Script(
     use Connection = Sql.BuildConnection(Server, Infobase, SqlUser, SqlPassword)
     val Database = V8Database.NewInstance(Connection)
 
-    if not Path.IsFile(ExtensionPath) and not Path.GetFileExtension(ExtensionPath).ToUpperCase() == "ZIP"
-        Log.e("ExtensionPath parameter must be path to the zip archive")
+    if not Path.IsFile(ExtensionPath) and not Path.ExtensionIs(ExtensionPath, "zip")
+        Log.e("ExtensionPath parameter must be a path to the zip archive")
         return 1
     ;
 
     Log.e("Unpacking the extension archive")
     val ExtensionFolder = Files.CreateTempDirectory()
-    val ExtensionArchive = new ZipFile(ExtensionPath)
-    ExtensionArchive.ExtractAll(ExtensionFolder)
+    Zip.ExtractToDirectory(ExtensionPath, ExtensionFolder.Path)
     ExtensionPath = ExtensionFolder.Path
 
     val ConfigurationFilePath = Path.Join(ExtensionPath, "Configuration.xml")

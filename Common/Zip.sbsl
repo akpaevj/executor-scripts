@@ -1,18 +1,26 @@
 #required Path.sbsl
+#required Path.sbsl
 
 @Global
-method ZipFolder(FolderPath: String, ArchivePath: String, ZipChildren: Boolean = True)
-    val Folder = new File(FolderPath)
-    val Archive = new File(ArchivePath)
+method CreateFromDirectory(StartPath: String, ZipPath: String)
+    val Folder = new File(StartPath)
+    val Archive = new File(ZipPath)
     var Writer = new ZipWriter(Archive.OpenWritableStream())
 
-    if ZipChildren
-        Folder.Children.ForEach(Child -> AddToZipArchive(Child, Writer))
-    else
-        AddToZipArchive(Folder, Writer)
-    ;
+    Folder.Children.ForEach(Child -> AddToZipArchive(Child, Writer))
 
     Writer.Write()
+;
+
+@Global
+method ExtractToDirectory(ZipPath: String, ExtractPath: String)
+    val Archive = new ZipFile(ZipPath)
+
+    if not Path.Exists(ExtractPath)
+        Files.CreateDirectory(ExtractPath)
+    ;
+
+    Archive.ExtractAll(ExtractPath)
 ;
 
 method AddToZipArchive(FileToZipping: File, Writer: ZipWriter, RelativePath: String = "")

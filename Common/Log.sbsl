@@ -1,4 +1,3 @@
-@Global
 enum LogLevel
     Trace,
     Debug,

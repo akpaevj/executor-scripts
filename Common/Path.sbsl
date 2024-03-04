@@ -14,7 +14,12 @@ method GetFileExtension(Path: String): String
 ;
 
 @Global
-method GetParent(Path: String): String
+method ExtensionIs(Path: String, Extension: String): Boolean
+    return GetFileExtension(Path).ToUpperCase() == Extension.ToUpperCase()
+;
+
+@Global
+method GetParentName(Path: String): String
     return new File(Path).Directory.Name
 ;
 

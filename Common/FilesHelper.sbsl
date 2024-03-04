@@ -17,11 +17,11 @@ method WriteToFile(FilePath: String, Data: Bytes)
 ;
 
 @Global
-method WriteToFile(FilePath: String, Content: String)
+method WriteToFile(FilePath: String, Content: String, Encoding: Encoding = Encoding.Utf8)
     val File = new File(FilePath)
     use Stream = File.OpenWritableStream()
 
     Stream.Flush()
 
-    Stream.Write(Content)  
+    Stream.Write(Content, Encoding)  
 ;

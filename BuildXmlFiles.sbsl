@@ -44,9 +44,9 @@ method BuildXmlFiles(CliPath: String, ProjectPath: String, DestinationFolder: St
     EdtCli.Start()
     EdtCli.WaitForCompletion()
 
-    val ArchivePath = Path.Join(DestinationFolder, "%ArchiveName.zip")
-    Zip.ZipFolder(BuildPath.Path, ArchivePath)
-    Console.Write("Zipped project path: ${ArchivePath}")
+    val ZipPath = Path.Join(DestinationFolder, "%ArchiveName.zip")
+    Zip.CreateFromDirectory(BuildPath.Path, ZipPath)
+    Console.Write("Zipped project path: ${ZipPath}")
 
     return EdtCli.GetExitCode()
 ;
