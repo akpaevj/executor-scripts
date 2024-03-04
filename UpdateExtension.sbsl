@@ -52,7 +52,7 @@ method Script(
     val ConfigInfo = Database.GetConfigInfo()
     var ExpectingConfigVersion = V8.ConfigurationVersionFromExtensionVersion(NewExtensionVersion)
     if ConfigInfo.Version != ExpectingConfigVersion
-        Log.e("Extension version (%ExpectingConfigVersion) targets to the other configuration version (${ConfigInfo.Version})")
+        Log.e("Extension version (%ExpectingConfigVersion) targets to other configuration version (${ConfigInfo.Version})")
         return 1
     ;
 

@@ -22,7 +22,7 @@ method Script(
     val ConfigInfo = Database.GetConfigInfo()
 
     if V8.VersionIsUpper(ConfigInfo.Version, RequiredVersion)
-        val CfuPath = Path.Join(Path.Join(TemplatesPath, RequiredVersion.Replace(".", "_")), "1cv8.cfu")
+        val CfuPath = Path.Join(TemplatesPath, RequiredVersion.Replace(".", "_"), "1cv8.cfu")
 
         if not Path.Exists(CfuPath)
             Log.i("Using CFU path: $CfuPath")
