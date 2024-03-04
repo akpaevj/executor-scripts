@@ -17,6 +17,7 @@ method LocalPortIsOpen(Port: Number, TimeoutSeconds: Number): Boolean
         val Output = Processes.GetProcessOutput(Process)
 
         if Output.Length() > 0
+            Console.Write(Output)
             Process.Stop()
             return True
         ;

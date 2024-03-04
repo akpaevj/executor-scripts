@@ -1,13 +1,16 @@
 #required Common/Path.sbsl
 #required Common/Zip.sbsl
+#required Common/Log.sbsl
 
 method BuildXmlFiles(CliPath: String, ProjectPath: String, DestinationFolder: String = "", ArchiveName: String = ""): Number
     if not Path.Exists(CliPath)
-        throw new IllegalArgumentException("Couldn't find edt cli executable by passed path")
+        Log.e("Couldn't find edt cli executable: %CliPath")
+        return 1
     ;
 
     if not Path.Exists(ProjectPath)
-        throw new IllegalArgumentException("Couldn't find project folder by passed path")
+        Log.e("Couldn't find project folder: %ProjectPath")
+        return 1
     ;
 
     if DestinationFolder == ""
@@ -15,7 +18,8 @@ method BuildXmlFiles(CliPath: String, ProjectPath: String, DestinationFolder: St
     ;
 
     if not Path.Exists(DestinationFolder)
-        throw new IllegalArgumentException("Couldn't find destination folder by passed path")
+        Log.e("Couldn't find destination folder: %DestinationFolder")
+        return 1
     ;
 
     if ArchiveName == ""

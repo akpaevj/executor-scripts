@@ -23,7 +23,8 @@ method GetConfigurationInfo(
     Infobase: String,
     User: String,
     Password: String,
-    PlatformVersion = ""): ConfigInfo?
+    PlatformVersion = "",
+    Extension = ""): ConfigInfo?
     val SshAgentBaseDir = Files.CreateTempDirectory("", True)
     val SshAgent = StartSshAgent(PlatformVersion, Server, Infobase, SshAgentBaseDir.Path)
     
@@ -40,7 +41,13 @@ method GetConfigurationInfo(
             Console.PromptString = "designer> "
 
             SshAgentConnection.ConnectIB(Console)
-            SshAgentConnection.UploadConfiguration(Console, ConfigFile.Name)
+            if Extension == ""
+                SshAgentConnection.UploadConfiguration(Console, ConfigFile.Name)
+            else
+                SshAgentConnection.UploadExtension(Console, ConfigFile.Name, Extension)
+            ;
+            SshAgentConnection.DisconnectIB(Console)
+            SshAgentConnection.Shutdown(Console)
             SshAgentConnection.Close(Console)
 
             val ConfigurationFile = SshAgentConnection.DownloadFile(User, Password, "Configuration.xml")

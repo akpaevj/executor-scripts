@@ -1,3 +1,4 @@
+#required V8.sbsl
 #required Sql.sbsl
 #required BracketsParser.sbsl
 #required BytesHelper.sbsl
@@ -31,7 +32,7 @@ structure ExtensionInfo
     val ProtectFromDangerActions: Boolean
     val GenerationVersion: Bytes
     val SafeMode: Boolean
-    val Version: Bytes?
+    val Version: String
     val Active: Boolean
     val UseMainRolesForAllUsers: Boolean
 ;
@@ -57,11 +58,25 @@ structure Class
     ;
 
     @Global
+    method HasExtension(ExtensionName: String): Boolean
+        val Query = Connection.CreateQueryWithSelect("SELECT Count(*) as Count FROM [dbo].[_ExtensionsInfo] WITH(NOLOCK) WHERE [_ExtName] = N'%ExtensionName'")
+
+        use QResult = Query.Execute()
+        QResult.Next()
+
+        return (QResult.Get("Count") as Number) > 0
+    ;
+
+    @Global
     method GetExtensionInfo(ExtensionName: String): ExtensionInfo
         val RawData = GetExtensionZippedInfo(ExtensionName)
         val Reader = AnotherFuckingOneCFormatReader.NewInstance(RawData, 2)
 
         val FileName = Reader.ReadString()
+
+        val Root = GetConfigCASFileDataAsBracketsNode(FileName)
+        val ConfigCompatibilityMode = V8BracketsHelper.GetCompatibilityMode(Root[0].GetChildNode([1,2,0]))
+
         val ProtectFromDangerActions = Reader.ReadByte() == Bytes {A2}
         val GenerationVersion = Reader.ReadVarbinary()
         val SafeMode = Reader.ReadBoolean()
@@ -71,18 +86,20 @@ structure Class
         val BracketsNode = Reader.ReadBracketsNode()
         val Synonym = V8BracketsHelper.GetSysonym(BracketsNode.GetChildNode([2]))
 
-        var Version: Bytes? = Undefined
+        var Version = "0.0.0.0"
         if not BytesHelper.Contains(Bytes{8182}, Reader.Peek())
             // extension version is specified
-            Version = Reader.ReadVarbinary()
+            Version = new String(Reader.ReadVarbinary())
         ;
 
-        Reader.ReadBoolean() // unknown flag
+        if V8.VersionIsUpper("8.3.21", ConfigCompatibilityMode)
+            Reader.ReadBoolean() // unknown flag   
+        ;
 
         val Active = Reader.ReadBoolean()
         val UseMainRolesForAllUsers = Reader.ReadBoolean()
 
-        Reader.ThrowIfNextIsNot(Bytes{20})
+        Reader.ThrowIfNextIsNot(Bytes{20}) 
 
         return new ExtensionInfo(
             ExtensionName,
@@ -100,12 +117,17 @@ structure Class
         return GetFileDataAsBracketsNode("Params", FileName)
     ;
 
-    method GetConfigCASFileDataAsBracketsNode(FileName: String): BracketsParser.BracketsNode
-        return GetFileDataAsBracketsNode("ConfigCAS", FileName)
+    method GetConfigCASFileDataAsBracketsNode(FileName: String): Array<BracketsParser.BracketsNode>
+        return GetFileDataAsBracketsNodes("ConfigCAS", FileName)
     ;
 
     method GetConfigFileDataAsBracketsNode(FileName: String): BracketsParser.BracketsNode
         return GetFileDataAsBracketsNode("Config", FileName)
+    ;
+
+    method GetFileDataAsBracketsNodes(TableName: String, FileName: String): Array<BracketsParser.BracketsNode>
+        val Data = GetFileDataAsString(TableName, FileName)
+        return BracketsParser.ParseList(Data)
     ;
 
     method GetFileDataAsBracketsNode(TableName: String, FileName: String): BracketsParser.BracketsNode

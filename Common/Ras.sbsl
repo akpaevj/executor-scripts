@@ -64,9 +64,9 @@ method BlockConnections(
 ;
 
 method CloseConnection(Connection: V8Connection)
-    try 
+    try
         Connection.Disconnect()
-    finally      
+    catch Exception: unknown
     ;
 ;
 

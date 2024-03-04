@@ -59,6 +59,24 @@ structure BracketsNode
 ;
 
 @Global
+method ParseList(Content: String, StartIndex: Number = 0): Array<BracketsNode>
+    val Result = new Array<BracketsNode>()
+    var Index = StartIndex
+
+    while Index < Content.Length()
+        if Content[Index] == "{"
+            val Node = ReadBlock(Content, Index)
+            Result.Add(Node)
+            Index += Node.Length
+        else
+            Index += 1
+        ;
+    ;
+    
+    return Result
+;
+
+@Global
 method Parse(Content: String, StartIndex: Number = 0): BracketsNode
     return ReadBlock(Content, StartIndex)
 ;

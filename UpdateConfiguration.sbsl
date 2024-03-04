@@ -16,7 +16,7 @@ method Script(
     RequiredVersion: String,
     TemplatesPath: String,
     AccessCode: String,
-    PlatformVersion: String = "")
+    PlatformVersion: String = ""): Number
     use Connection = Sql.BuildConnection(Server, Infobase, SqlUser, SqlPassword)
     val Database = V8Database.NewInstance(Connection)
     val ConfigInfo = Database.GetConfigInfo()
@@ -24,10 +24,11 @@ method Script(
     if V8.VersionIsUpper(ConfigInfo.Version, RequiredVersion)
         val CfuPath = Path.Join(Path.Join(TemplatesPath, RequiredVersion.Replace(".", "_")), "1cv8.cfu")
 
-        if Path.Exists(CfuPath)
+        if not Path.Exists(CfuPath)
             Log.i("Using CFU path: $CfuPath")
         else
-            throw new IllegalStateException("Couldn't find CFU file of required version $RequiredVersion by path: %CfuPath")
+            Log.e("Couldn't find CFU file of required version $RequiredVersion by path: %CfuPath")
+            return 1
         ;
 
         Log.i("Blocking connections")
@@ -37,7 +38,7 @@ method Script(
         BatchMode.UpdateConfiguration(Server, Infobase, User, Password, AccessCode, CfuPath, PlatformVersion)
 
         Log.i("Unblocking connections")
-        Ras.UnblockConnections(Infobase, User, Password, AccessCode)
+        Ras.UnblockConnections(Infobase, User, Password)
     else
         Log.i("It doesn't need to update configuration (Current: ${ConfigInfo.Version}, Required: %RequiredVersion)")
     ;

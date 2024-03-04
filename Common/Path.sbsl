@@ -1,4 +1,9 @@
 @Global
+method IsFile(Path: String): Boolean
+    return new File(Path).IsFile()
+;
+
+@Global
 method GetFileName(Path: String): String
     return new File(Path).Name
 ;

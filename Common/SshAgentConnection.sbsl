@@ -14,7 +14,12 @@ method ConnectIB(Console: SshConsole)
 
 @Global
 method UploadConfiguration(Console: SshConsole, ConfigFilePath: String)
-    Console.Execute("config dump-config-to-files --dir=\".\" --list-file=\"${ConfigFilePath}\"", 2m)?.Close()
+    Console.Execute("config dump-config-to-files --dir=\".\" --list-file=\"%ConfigFilePath\"", 2m)?.Close()
+;
+
+@Global
+method UploadExtension(Console: SshConsole, ConfigFilePath: String, Extension: String)
+    Console.Execute("config dump-config-to-files --dir=\".\" --extension=\"%Extension\" --list-file=\"%ConfigFilePath\"", 2m)?.Close()
 ;
 
 @Global

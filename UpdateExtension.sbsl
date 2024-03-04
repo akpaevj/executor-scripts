@@ -1,0 +1,72 @@
+#required Common/Log.sbsl
+#required Common/V8Database.sbsl
+#required Common/Sql.sbsl
+#required Common/V8.sbsl
+#required Common/Path.sbsl
+#required Common/BatchMode.sbsl
+#required Common/Ras.sbsl
+
+// Method expects to get a path to the zip archive in the "ExtensionPath" parameter
+method Script(
+    Server: String, 
+    Infobase: String, 
+    User: String, 
+    Password: String,
+    SqlUser: String,
+    SqlPassword: String,
+    ExtensionPath: String,
+    AccessCode: String,
+    PlatformVersion: String = ""): Number
+    use Connection = Sql.BuildConnection(Server, Infobase, SqlUser, SqlPassword)
+    val Database = V8Database.NewInstance(Connection)
+
+    if not Path.IsFile(ExtensionPath) and not Path.GetFileExtension(ExtensionPath).ToUpperCase() == "ZIP"
+        Log.e("ExtensionPath parameter must be path to the zip archive")
+        return 1
+    ;
+
+    val ExtensionFolder = Files.CreateTempDirectory()
+    val ExtensionArchive = new ZipFile(ExtensionPath)
+    ExtensionArchive.ExtractAll(ExtensionFolder)
+    ExtensionPath = ExtensionFolder.Path
+
+    val ConfigurationFilePath = Path.Join(ExtensionPath, "Configuration.xml")
+
+    if not Path.Exists(ConfigurationFilePath)
+        Log.e("Couldn't find \"Configuration.xml\" file")
+        return 1
+    ;
+
+    val Reader = new XmlReader(FilesHelper.ReadFileToEnd(ConfigurationFilePath))
+    val Namespace = "http://v8.1c.ru/8.3/MDClasses"
+
+    val NewExtensionName = Xml.GetValue(Reader, "MetaDataObject, Configuration, Properties, Name", Namespace)
+    val NewExtensionVersion = Xml.GetValue(Reader, "Version", Namespace) ?? "0.0.0.0"
+
+    if not Database.HasExtension(NewExtensionName)
+        Log.e("Extension \"%NewExtensionName\" is not connected to the infobase \"%Infobase\"")
+        return 1
+    ;
+
+    val ConfigInfo = Database.GetConfigInfo()
+    var ExpectingConfigVersion = V8.ConfigurationVersionFromExtensionVersion(NewExtensionVersion)
+    if ConfigInfo.Version != ExpectingConfigVersion
+        Log.e("Extension version (%ExpectingConfigVersion) targets to the other configuration version (${ConfigInfo.Version})")
+        return 1
+    ;
+
+    val ConnectedExtensionInfo = Database.GetExtensionInfo(NewExtensionName)
+    if not V8.VersionIsUpper(ConnectedExtensionInfo.Version, NewExtensionVersion)
+        Log.e("It doesn't need to update extension (Current: ${ConnectedExtensionInfo.Version}, New: %NewExtensionVersion)")
+        return 1
+    ;
+
+    Log.i("Blocking connections")
+    Ras.BlockConnections(Infobase, User, Password, AccessCode)
+
+    Log.i("Updating extension (%Server/%Infobase/%NewExtensionName)")
+    BatchMode.UpdateExtension(Server, Infobase, User, Password, AccessCode, NewExtensionName, ExtensionPath, PlatformVersion)
+
+    Log.i("Unblocking connections")
+    Ras.UnblockConnections(Infobase, User, Password)
+;
