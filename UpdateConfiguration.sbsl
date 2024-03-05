@@ -16,7 +16,7 @@ method Script(
     RequiredVersion: String,
     TemplatesPath: String,
     AccessCode: String,
-    PlatformVersion: String = ""): Number
+    PlatformVersion: String = "")
     use Connection = Sql.BuildConnection(Server, Infobase, SqlUser, SqlPassword)
     val Database = V8Database.NewInstance(Connection)
     val ConfigInfo = Database.GetConfigInfo()
@@ -28,7 +28,6 @@ method Script(
             Log.i("Using CFU path: $CfuPath")
         else
             Log.e("Couldn't find CFU file of required version \"$RequiredVersion\" by path \"%CfuPath\"")
-            return 1
         ;
 
         Log.i("Blocking connections")
@@ -42,6 +41,4 @@ method Script(
     else
         Log.i("It doesn't need to update configuration (Current: ${ConfigInfo.Version}, Required: %RequiredVersion)")
     ;
-
-    return 0
 ;

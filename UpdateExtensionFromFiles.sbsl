@@ -23,10 +23,9 @@ method Script(
 
     if not Path.IsFile(ExtensionPath) and not Path.ExtensionIs(ExtensionPath, "zip")
         Log.e("ExtensionPath parameter must be a path to the zip archive")
-        return 1
     ;
 
-    Log.e("Unpacking the extension archive")
+    Log.i("Unpacking the extension archive")
     val ExtensionFolder = Files.CreateTempDirectory()
     Zip.ExtractToDirectory(ExtensionPath, ExtensionFolder.Path)
     ExtensionPath = ExtensionFolder.Path
@@ -35,27 +34,23 @@ method Script(
 
     if not Path.Exists(ConfigurationFilePath)
         Log.e("Couldn't find \"Configuration.xml\" file")
-        return 1
     ;
 
     val NewExtensionInfo = V8.ConfigInfoFromConfiguration(ConfigurationFilePath)
 
     if not Database.HasExtension(NewExtensionInfo.Name)
         Log.e("Extension \"${NewExtensionInfo.Name}\" is not connected to the infobase \"%Infobase\"")
-        return 1
     ;
 
     val ConfigInfo = Database.GetConfigInfo()
     var ExpectingConfigVersion = V8.ConfigurationVersionFromExtensionVersion(NewExtensionInfo.Version)
     if ConfigInfo.Version != ExpectingConfigVersion
         Log.e("Extension version (%ExpectingConfigVersion) targets to other configuration version (${ConfigInfo.Version})")
-        return 1
     ;
 
     val ConnectedExtensionInfo = Database.GetExtensionInfo(NewExtensionInfo.Name)
     if not V8.VersionIsUpper(ConnectedExtensionInfo.Version, NewExtensionInfo.Version)
         Log.e("It doesn't need to update extension (Current: ${ConnectedExtensionInfo.Version}, New: ${NewExtensionInfo.Version})")
-        return 1
     ;
 
     Log.i("Blocking connections")

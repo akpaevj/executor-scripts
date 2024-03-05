@@ -17,13 +17,12 @@ method Script(
     ExtensionName: String,
     ExtensionPath: String,
     AccessCode: String,
-    PlatformVersion = ""): Number
+    PlatformVersion = "")
     use Connection = Sql.BuildConnection(Server, Infobase, SqlUser, SqlPassword)
     val Database = V8Database.NewInstance(Connection)
 
     if not Database.HasExtension(ExtensionName)
         Log.e("Extension \"%ExtensionName\" is not connected to the infobase \"%Infobase\"")
-        return 1
     ;
 
     Log.i("Blocking connections")
@@ -34,6 +33,4 @@ method Script(
 
     Log.i("Unblocking connections")
     Ras.UnblockConnections(Infobase, User, Password)
-
-    return 0
 ;

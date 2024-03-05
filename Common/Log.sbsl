@@ -29,16 +29,16 @@ method w(Message: String)
 ;
 
 @Global
-method e(Message: String)
-    Log(LogLevel.Error, Message)
+method e(Message: String, ThrowException = True)
+    Log(LogLevel.Error, Message, ThrowException)
 ;
 
 @Global
-method c(Message: String)
-    Log(LogLevel.Critical, Message)
+method c(Message: String, ThrowException = True)
+    Log(LogLevel.Critical, Message, ThrowException)
 ;
 
-method Log(Level: LogLevel, Message: String)
+method Log(Level: LogLevel, Message: String, ThrowException = False)
     var LevelString = ""
     
     case Level
@@ -59,7 +59,11 @@ method Log(Level: LogLevel, Message: String)
     val Content = "${DateTime.Now()} - %LevelString - %Message"
     
     if Level.Index >= LogLevel.Error.Index
-        Console.WriteError(Content)
+        if ThrowException
+            throw new IllegalStateException(Content)
+        else
+            Console.WriteError(Content)
+        ;
     else
         Console.Write(Content)
     ;

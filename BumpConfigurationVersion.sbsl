@@ -2,12 +2,11 @@
 #required Common/Log.sbsl
 #required Common/FilesHelper.sbsl
 
-method Script(ProjectPath: String, LastPart = -1): Number
+method Script(ProjectPath: String, LastPart = -1)
     val ConfigurationPath = Path.Join(ProjectPath, "Configuration.xml")
     
     if not Path.Exists(ConfigurationPath)
         Log.e("Couldn't find \"Configuration.xml\" file")
-        return 1
     ;
 
     var ConfigurationContent = FilesHelper.ReadFileToEnd(ConfigurationPath)
@@ -17,7 +16,6 @@ method Script(ProjectPath: String, LastPart = -1): Number
 
     if Matches.Size() == 0
         Log.e("Couldn't find Version tag or the version is not specified")
-        return 1
     ;
 
     // take only the first match
@@ -46,6 +44,4 @@ method Script(ProjectPath: String, LastPart = -1): Number
     FilesHelper.WriteToFile(ConfigurationPath, ConfigurationContent)
 
     Log.i("New version is %NewVersion")
-
-    return 0
 ;

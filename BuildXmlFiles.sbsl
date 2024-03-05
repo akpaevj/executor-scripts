@@ -2,15 +2,13 @@
 #required Common/Zip.sbsl
 #required Common/Log.sbsl
 
-method Script(CliPath: String, ProjectPath: String, DestinationFolder: String = "", ArchiveName: String = ""): Number
+method Script(CliPath: String, ProjectPath: String, DestinationFolder: String = "", ArchiveName: String = "")
     if not Path.Exists(CliPath)
         Log.e("Couldn't find edt cli executable: %CliPath")
-        return 1
     ;
 
     if not Path.Exists(ProjectPath)
         Log.e("Couldn't find project folder: %ProjectPath")
-        return 1
     ;
 
     if DestinationFolder == ""
@@ -19,7 +17,6 @@ method Script(CliPath: String, ProjectPath: String, DestinationFolder: String = 
 
     if not Path.Exists(DestinationFolder)
         Log.e("Couldn't find build destination folder: %DestinationFolder")
-        return 1
     ;
 
     if ArchiveName == ""
@@ -46,7 +43,6 @@ method Script(CliPath: String, ProjectPath: String, DestinationFolder: String = 
 
     val ZipPath = Path.Join(DestinationFolder, "%ArchiveName.zip")
     Zip.CreateFromDirectory(BuildPath.Path, ZipPath)
-    Console.Write("Zipped project path: ${ZipPath}")
-
-    return EdtCli.GetExitCode()
+    
+    Log.i("Zipped project path: ${ZipPath}")
 ;
