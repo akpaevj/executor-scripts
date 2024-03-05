@@ -138,7 +138,7 @@ method SetSingleUserMode(Connection: SqlConnection, DatabaseName: String)
     val Query = Connection.CreateQueryWithoutSelect(
         "IF EXISTS (SELECT 1 FROM sys.databases WHERE [name] = N'%DatabaseName')
         BEGIN
-            EXEC (N'ALTER DATABASE %DatabaseName SET SINGLE_USER WITH ROLLBACK IMMEDIATE;');
+            EXEC (N'ALTER DATABASE [%DatabaseName] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;');
         END;")
 
     Query.Execute()
@@ -148,7 +148,7 @@ method SetMultiUserMode(Connection: SqlConnection, DatabaseName: String)
     val Query = Connection.CreateQueryWithoutSelect(
         "IF EXISTS (SELECT 1 FROM sys.databases WHERE [name] = N'%DatabaseName')
         BEGIN
-            EXEC (N'ALTER DATABASE %DatabaseName SET MULTI_USER;');
+            EXEC (N'ALTER DATABASE [%DatabaseName] SET MULTI_USER;');
         END;")
 
     Query.Execute()
