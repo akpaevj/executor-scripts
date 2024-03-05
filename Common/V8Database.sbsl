@@ -4,55 +4,21 @@
 #required BytesHelper.sbsl
 #required V8BracketsHelper.sbsl
 #required AnotherFuckingOneCFormatReader.sbsl
-
-@Global
-enum DataLockingControlMode
-    None
-    Manual
-    Auto
-    AutoAndManual
-;
-
-@Global
-structure ConfigInfo
-    val Name: String
-    val Synonym: String
-    val Comment: String
-    val Supplier: String
-    val Version: String
-    req val DataLockingControlMode: DataLockingControlMode
-    val CompatibilityMode: String
-;
-
-@Global
-structure ExtensionInfo
-    val Name: String
-    val Synonym: String
-    val FileName: String
-    val ProtectFromDangerActions: Boolean
-    val GenerationVersion: Bytes
-    val SafeMode: Boolean
-    val Version: String
-    val Active: Boolean
-    val UseMainRolesForAllUsers: Boolean
-;
+#required ConfigInfo.sbsl
 
 @Global
 structure Class
     req val Connection: SqlConnection
 
     @Global
-    method GetConfigInfo(): ConfigInfo
+    method GetConfigInfo(): ConfigInfo.Class
         val Root = GetConfigFileDataAsBracketsNode("root")
         val Conf =  GetConfigFileDataAsBracketsNode(Root.GetChildNode([1]).Value)
 
-        return new ConfigInfo(
+        return new ConfigInfo.Class(
             Conf.GetChildNode([3, 1, 1, 1, 1, 2]).AsString(),
             V8BracketsHelper.GetSysonym(Conf.GetChildNode([3, 1, 1, 1, 1, 3])),
-            Conf.GetChildNode([3, 1, 1, 1, 1, 4]).AsString(),
-            Conf.GetChildNode([3, 1, 1, 14]).AsString(),
             Conf.GetChildNode([3, 1, 1, 15]).AsString(),
-            DataLockingControlMode.Items()[Conf.GetChildNode([3, 1, 1, 17]).AsNumber()],
             V8BracketsHelper.GetCompatibilityMode(Conf.GetChildNode([3, 1, 1, 26]))
         )
     ;
@@ -68,19 +34,15 @@ structure Class
     ;
 
     @Global
-    method GetExtensionInfo(ExtensionName: String): ExtensionInfo
+    method GetExtensionInfo(ExtensionName: String): ConfigInfo.Class
         val RawData = GetExtensionZippedInfo(ExtensionName)
         val Reader = AnotherFuckingOneCFormatReader.NewInstance(RawData, 2)
 
-        val FileName = Reader.ReadString()
+        Reader.ReadString() // FileName
 
-        val Root = GetConfigCASFileDataAsBracketsNode(FileName)
-        val ConfigCompatibilityMode = V8BracketsHelper.GetCompatibilityMode(Root[0].GetChildNode([1,2,0]))
-
-        val ProtectFromDangerActions = Reader.ReadByte() == Bytes {A2}
-        val GenerationVersion = Reader.ReadVarbinary()
-        val SafeMode = Reader.ReadBoolean()
-
+        Reader.ReadByte() // Protect from danger actions " == Bytes {A2}" - is true
+        Reader.ReadVarbinary() // Generation version
+        Reader.ReadBoolean() // safe mode
         Reader.ReadBoolean() // unknown flag
 
         val BracketsNode = Reader.ReadBracketsNode()
@@ -92,25 +54,11 @@ structure Class
             Version = new String(Reader.ReadVarbinary())
         ;
 
-        if V8.VersionIsUpper("8.3.21", ConfigCompatibilityMode)
-            Reader.ReadBoolean() // unknown flag   
-        ;
-
-        val Active = Reader.ReadBoolean()
-        val UseMainRolesForAllUsers = Reader.ReadBoolean()
-
-        Reader.ThrowIfNextIsNot(Bytes{20}) 
-
-        return new ExtensionInfo(
+        return new ConfigInfo.Class(
             ExtensionName,
             Synonym,
-            FileName,
-            ProtectFromDangerActions,
-            GenerationVersion,
-            SafeMode,
             Version,
-            Active,
-            UseMainRolesForAllUsers)
+            "")
     ;
 
     method GetParamsFileDataAsBracketsNode(FileName: String): BracketsParser.BracketsNode

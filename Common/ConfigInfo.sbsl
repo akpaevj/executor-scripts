@@ -1,0 +1,7 @@
+@Global
+structure Class
+    val Name: String
+    val Synonym: String
+    val Version: String
+    val CompatibilityMode: String
+;

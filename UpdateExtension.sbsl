@@ -38,35 +38,31 @@ method Script(
         return 1
     ;
 
-    val Reader = new XmlReader(FilesHelper.ReadFileToEnd(ConfigurationFilePath))
-    val Namespace = "http://v8.1c.ru/8.3/MDClasses"
+    val NewExtensionInfo = V8.ConfigInfoFromConfiguration(ConfigurationFilePath)
 
-    val NewExtensionName = Xml.GetValue(Reader, "MetaDataObject, Configuration, Properties, Name", Namespace)
-    val NewExtensionVersion = Xml.GetValue(Reader, "Version", Namespace) ?? "0.0.0.0"
-
-    if not Database.HasExtension(NewExtensionName)
-        Log.e("Extension \"%NewExtensionName\" is not connected to the infobase \"%Infobase\"")
+    if not Database.HasExtension(NewExtensionInfo.Name)
+        Log.e("Extension \"${NewExtensionInfo.Name}\" is not connected to the infobase \"%Infobase\"")
         return 1
     ;
 
     val ConfigInfo = Database.GetConfigInfo()
-    var ExpectingConfigVersion = V8.ConfigurationVersionFromExtensionVersion(NewExtensionVersion)
+    var ExpectingConfigVersion = V8.ConfigurationVersionFromExtensionVersion(NewExtensionInfo.Version)
     if ConfigInfo.Version != ExpectingConfigVersion
         Log.e("Extension version (%ExpectingConfigVersion) targets to other configuration version (${ConfigInfo.Version})")
         return 1
     ;
 
-    val ConnectedExtensionInfo = Database.GetExtensionInfo(NewExtensionName)
-    if not V8.VersionIsUpper(ConnectedExtensionInfo.Version, NewExtensionVersion)
-        Log.e("It doesn't need to update extension (Current: ${ConnectedExtensionInfo.Version}, New: %NewExtensionVersion)")
+    val ConnectedExtensionInfo = Database.GetExtensionInfo(NewExtensionInfo.Name)
+    if not V8.VersionIsUpper(ConnectedExtensionInfo.Version, NewExtensionInfo.Version)
+        Log.e("It doesn't need to update extension (Current: ${ConnectedExtensionInfo.Version}, New: ${NewExtensionInfo.Version})")
         return 1
     ;
 
     Log.i("Blocking connections")
     Ras.BlockConnections(Infobase, User, Password, AccessCode)
 
-    Log.i("Updating extension (%Server/%Infobase/%NewExtensionName)")
-    BatchMode.UpdateExtension(Server, Infobase, User, Password, AccessCode, NewExtensionName, ExtensionPath, PlatformVersion)
+    Log.i("Updating extension (%Server/%Infobase/${NewExtensionInfo.Name})")
+    BatchMode.UpdateExtension(Server, Infobase, User, Password, AccessCode, NewExtensionInfo.Name, ExtensionPath, PlatformVersion)
 
     Log.i("Unblocking connections")
     Ras.UnblockConnections(Infobase, User, Password)

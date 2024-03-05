@@ -1,5 +1,8 @@
 #required Path.sbsl 
 #required Net.sbsl
+#required ConfigInfo.sbsl
+#required FilesHelper.sbsl
+#required Xml.sbsl
 
 @Global
 enum Arch
@@ -30,6 +33,20 @@ method ConfigurationVersionFromExtensionVersion(Version: String = "0.0.0.0"): St
     else
         throw new IllegalFormatException("Unexpected format of the version: %Version") 
     ;
+;
+
+@Global
+method ConfigInfoFromConfiguration(ConfigurationPath: String): ConfigInfo.Class 
+    val Reader = new XmlReader(FilesHelper.ReadFileToEnd(ConfigurationPath))
+    val Namespace = "http://v8.1c.ru/8.3/MDClasses"
+
+    val Name = Xml.GetValue(Reader, "MetaDataObject, Configuration, Properties, Name", Namespace)
+    val Synonym = Xml.GetValue(Reader, "MetaDataObject, Configuration, Properties, Synonym, v8:item, v8:content", Namespace)
+    val Version = Xml.GetValue(Reader, "Version", Namespace) ?? "0.0.0.0"
+
+    val ExtensionCompatibilityMode = Xml.GetValue(Reader, "MetaDataObject, Configuration, Properties, ConfigurationExtensionCompatibilityMode", Namespace)
+
+    return new ConfigInfo.Class(Name, Synonym, Version, ExtensionCompatibilityMode)
 ;
 
 @Global

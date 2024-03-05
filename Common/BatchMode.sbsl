@@ -4,27 +4,16 @@
 #required SshAgentConnection.sbsl
 #required Net.sbsl
 #required Xml.sbsl
+#required ConfigInfo.sbsl
 
 @Global
-method NeedUpdateConfiguration(
+method GetConfigInfo(
     Server: String,
     Infobase: String,
     User: String,
     Password: String,
-    RequestedVersion: String,
-    PlatformVersion = ""): Boolean
-    val ConfigurationInfo = GetConfigurationInfo(Server, Infobase, User, Password, PlatformVersion)
-    return V8.VersionIsUpper(ConfigurationInfo.Version, RequestedVersion)
-;
-
-@Global
-method GetConfigurationInfo(
-    Server: String,
-    Infobase: String,
-    User: String,
-    Password: String,
-    PlatformVersion = "",
-    Extension = ""): ConfigInfo?
+    Extension = "",
+    PlatformVersion = ""): ConfigInfo.Class?
     val SshAgentBaseDir = Files.CreateTempDirectory("", True)
     val SshAgent = StartSshAgent(PlatformVersion, Server, Infobase, SshAgentBaseDir.Path)
     
@@ -51,15 +40,9 @@ method GetConfigurationInfo(
             SshAgentConnection.Close(Console)
 
             val ConfigurationFile = SshAgentConnection.DownloadFile(User, Password, "Configuration.xml")
-            SshAgent.Stop()  
-            
-            val Reader = new XmlReader(FilesHelper.ReadFileToEnd(ConfigurationFile))
-            val Namespace = "http://v8.1c.ru/8.3/MDClasses"
+            SshAgent.Stop()
 
-            val Name = Xml.GetValue(Reader, "MetaDataObject, Configuration, Properties, Name", Namespace)
-            val Version = Xml.GetValue(Reader, "Version", Namespace)
-
-            return new ConfigInfo(Name, Version)
+            return V8.ConfigInfoFromConfiguration(ConfigurationFile)
         else
             Console.Write("Waiting for the opening port timeout is expired")
         ;
@@ -193,9 +176,4 @@ method DesignerBatchModeArguments(
     ;
 
     return Args
-;
-
-structure ConfigInfo
-    val Name: String
-    val Version: String
 ;
