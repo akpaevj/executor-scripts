@@ -1,0 +1,48 @@
+#required Common/Path.sbsl
+#required Common/Log.sbsl
+#required Common/FilesHelper.sbsl
+
+method Script(ProjectPath: String, Id = -1): Number
+    val ConfigurationPath = Path.Join(ProjectPath, "Configuration.xml")
+    
+    if not Path.Exists(ConfigurationPath)
+        Log.e("Couldn't find \"Configuration.xml\" file")
+        return 1
+    ;
+
+    var ConfigurationContent = FilesHelper.ReadFileToEnd(ConfigurationPath)
+
+    var VersionPattern = new Pattern("<Version>.*?</Version>")
+    var Matches = VersionPattern.FindMatches(ConfigurationContent)
+
+    if Matches.Size() == 0
+        Log.e("Couldn't find Version tag or the version is not specified")
+        return 1
+    ;
+
+    // take only the first match
+    val Match = Matches.First()
+    
+    val ValueStartIndex = Match.Value().Find(">")
+    var ValueEndIndex = Match.Value().Find("<", ValueStartIndex)
+    val Value = Match.Value().Substring(ValueStartIndex + 1, ValueEndIndex).Trim()
+
+    val Parts = Value.Split(".")
+    if Id == -1
+        val Bumped = new Number(Parts.Last()) + 1
+        Parts.RemoveAt(Parts.Bound())
+        Parts.Add(Bumped.ToString().Replace(" ", ""))
+    else
+        Parts.RemoveAt(Parts.Bound())
+        Parts.Add(Id.ToString().Replace(" ", ""))
+    ;
+
+    val NewVersion = Parts.Join(".")
+    val NewValue = "<Version>%NewVersion</Version>"
+
+    ConfigurationContent = ConfigurationContent.ReplaceRange(NewValue, Match.Index(), Match.Index() + Match.Length())
+
+    FilesHelper.WriteToFile(ConfigurationPath, ConfigurationContent)
+
+    return 0
+;

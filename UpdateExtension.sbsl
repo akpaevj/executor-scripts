@@ -70,4 +70,6 @@ method Script(
 
     Log.i("Unblocking connections")
     Ras.UnblockConnections(Infobase, User, Password)
+
+    return 0
 ;

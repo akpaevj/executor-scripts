@@ -27,7 +27,7 @@ method Script(
         if not Path.Exists(CfuPath)
             Log.i("Using CFU path: $CfuPath")
         else
-            Log.e("Couldn't find CFU file of required version $RequiredVersion by path: %CfuPath")
+            Log.e("Couldn't find CFU file of required version \"$RequiredVersion\" by path \"%CfuPath\"")
             return 1
         ;
 
@@ -42,4 +42,6 @@ method Script(
     else
         Log.i("It doesn't need to update configuration (Current: ${ConfigInfo.Version}, Required: %RequiredVersion)")
     ;
+
+    return 0
 ;
