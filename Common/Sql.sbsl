@@ -21,7 +21,9 @@ method CreateDatabaseFromLastBackup(
     val DatabaseFiles = GetDatabaseFileNames(Connection, Database)
     val FullBackup = GetLastFullBackup(Connection, Database)
 
+    SetSingleUserMode(Connection, NewDatabaseName)
     RestoreBackup(Connection, DatabaseFiles, FullBackup, NewDatabaseName)
+    SetMultiUserMode(Connection, NewDatabaseName)
 ;
 
 method GetLastFullBackup(Connection: SqlConnection, Database: String): FullBackup
@@ -128,6 +130,26 @@ method RestoreBackup(Connection: SqlConnection, DatabaseFiles: DatabaseFiles, Fu
         WITH MOVE N'${DatabaseFiles.DataFileName}' TO N'${MdfPath}',  
             MOVE N'${DatabaseFiles.LogFileName}' TO N'${LogPath}',
         REPLACE;")
+
+    Query.Execute()
+;
+
+method SetSingleUserMode(Connection: SqlConnection, DatabaseName: String)
+    val Query = Connection.CreateQueryWithoutSelect(
+        "IF EXISTS (SELECT 1 FROM sys.databases WHERE [name] = N'%DatabaseName')
+        BEGIN
+            EXEC (N'ALTER DATABASE %DatabaseName SET SINGLE_USER WITH ROLLBACK IMMEDIATE;');
+        END;")
+
+    Query.Execute()
+;
+
+method SetMultiUserMode(Connection: SqlConnection, DatabaseName: String)
+    val Query = Connection.CreateQueryWithoutSelect(
+        "IF EXISTS (SELECT 1 FROM sys.databases WHERE [name] = N'%DatabaseName')
+        BEGIN
+            EXEC (N'ALTER DATABASE %DatabaseName SET MULTI_USER;');
+        END;")
 
     Query.Execute()
 ;

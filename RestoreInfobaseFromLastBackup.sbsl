@@ -10,7 +10,7 @@ method Script(
     InfobaseName: String,
     RasAddress = "localhost",
     RasPort = 1545)
-    Log.i("Restoring database from the last backup")
+    Log.i("Restoring database from the last backup of %SourceDatabase to $InfobaseName")
     Sql.CreateDatabaseFromLastBackup(Server, SourceDatabase, User, Password, InfobaseName)
 
     Log.i("Register infobase in the cluster")
