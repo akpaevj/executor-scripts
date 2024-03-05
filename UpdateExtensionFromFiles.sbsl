@@ -17,7 +17,7 @@ method Script(
     SqlPassword: String,
     ExtensionPath: String,
     AccessCode: String,
-    PlatformVersion: String = ""): Number
+    PlatformVersion = ""): Number
     use Connection = Sql.BuildConnection(Server, Infobase, SqlUser, SqlPassword)
     val Database = V8Database.NewInstance(Connection)
 

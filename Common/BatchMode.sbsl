@@ -5,6 +5,7 @@
 #required Net.sbsl
 #required Xml.sbsl
 #required ConfigInfo.sbsl
+#required Path.sbsl
 
 @Global
 method GetConfigInfo(
@@ -73,7 +74,8 @@ method UpdateConfiguration(
         Password,
         AccessCode
     )
-    Args.Add("/Out\"${OutFile}\"")
+
+    AddOutFileToArguments(Args, OutFile)
     Args.Add("/UpdateCfg\"${CfuPath}\"")
     Args.Add("/UpdateDBCfg -Dynamic- -Server -SessionTerminate force")
     
@@ -104,9 +106,10 @@ method UpdateExtension(
         Password,
         AccessCode
     )
-    Args.Add("/Out\"${OutFile}\"")
 
-    if new File(ExtensionPath).Extension.ToUpperCase() == "CFE"
+    AddOutFileToArguments(Args, OutFile)
+
+    if Path.ExtensionIs(ExtensionPath, "cfe")
         Args.Add("/LoadCfg\"${ExtensionPath}\" -Extension${ExtensionName}")
     else
         Args.Add("/LoadConfigFromFiles\"${ExtensionPath}\" -Extension${ExtensionName}")
@@ -176,4 +179,8 @@ method DesignerBatchModeArguments(
     ;
 
     return Args
+;
+
+method AddOutFileToArguments(Args: Array<String>, OutPath: File)
+    Args.Add("/Out\"%OutPath\"")
 ;

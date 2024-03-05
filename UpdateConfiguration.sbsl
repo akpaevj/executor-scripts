@@ -24,7 +24,7 @@ method Script(
     if V8.VersionIsUpper(ConfigInfo.Version, RequiredVersion)
         val CfuPath = Path.Join(TemplatesPath, RequiredVersion.Replace(".", "_"), "1cv8.cfu")
 
-        if not Path.Exists(CfuPath)
+        if Path.Exists(CfuPath)
             Log.i("Using CFU path: $CfuPath")
         else
             Log.e("Couldn't find CFU file of required version \"$RequiredVersion\" by path \"%CfuPath\"")

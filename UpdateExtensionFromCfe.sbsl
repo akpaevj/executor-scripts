@@ -1,0 +1,39 @@
+#required Common/Log.sbsl
+#required Common/V8Database.sbsl
+#required Common/Sql.sbsl
+#required Common/V8.sbsl
+#required Common/Path.sbsl
+#required Common/BatchMode.sbsl
+#required Common/Ras.sbsl
+#required Common/Zip.sbsl
+
+method Script(
+    Server: String, 
+    Infobase: String, 
+    User: String, 
+    Password: String,
+    SqlUser: String,
+    SqlPassword: String,
+    ExtensionName: String,
+    ExtensionPath: String,
+    AccessCode: String,
+    PlatformVersion = ""): Number
+    use Connection = Sql.BuildConnection(Server, Infobase, SqlUser, SqlPassword)
+    val Database = V8Database.NewInstance(Connection)
+
+    if not Database.HasExtension(ExtensionName)
+        Log.e("Extension \"%ExtensionName\" is not connected to the infobase \"%Infobase\"")
+        return 1
+    ;
+
+    Log.i("Blocking connections")
+    Ras.BlockConnections(Infobase, User, Password, AccessCode)
+
+    Log.i("Updating extension (%Server/%Infobase/%ExtensionName)")
+    BatchMode.UpdateExtension(Server, Infobase, User, Password, AccessCode, ExtensionName, ExtensionPath, PlatformVersion)
+
+    Log.i("Unblocking connections")
+    Ras.UnblockConnections(Infobase, User, Password)
+
+    return 0
+;
