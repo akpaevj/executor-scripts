@@ -2,7 +2,7 @@
 #required Common/Zip.sbsl
 #required Common/Log.sbsl
 
-method BuildXmlFiles(CliPath: String, ProjectPath: String, DestinationFolder: String = "", ArchiveName: String = ""): Number
+method Script(CliPath: String, ProjectPath: String, DestinationFolder: String = "", ArchiveName: String = ""): Number
     if not Path.Exists(CliPath)
         Log.e("Couldn't find edt cli executable: %CliPath")
         return 1
