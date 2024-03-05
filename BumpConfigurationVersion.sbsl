@@ -27,6 +27,8 @@ method Script(ProjectPath: String, LastPart = -1): Number
     var ValueEndIndex = Match.Value().Find("<", ValueStartIndex)
     val Value = Match.Value().Substring(ValueStartIndex + 1, ValueEndIndex).Trim()
 
+    Log.i("Current version is %Value")
+
     val Parts = Value.Split(".")
     if LastPart == -1
         val Bumped = new Number(Parts.Last()) + 1
@@ -42,6 +44,8 @@ method Script(ProjectPath: String, LastPart = -1): Number
 
     ConfigurationContent = ConfigurationContent.ReplaceRange(NewValue, Match.Index(), Match.Index() + Match.Length())
     FilesHelper.WriteToFile(ConfigurationPath, ConfigurationContent)
+
+    Log.i("New version is %NewVersion")
 
     return 0
 ;
