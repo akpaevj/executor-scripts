@@ -27,7 +27,7 @@ method CreateInfobaseIfNotExists(
 
         try 
             NewInfobase.Write()
-        finally  
+        catch Exception: unknown  
         ;
     ;
 ;

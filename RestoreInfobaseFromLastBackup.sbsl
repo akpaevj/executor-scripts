@@ -13,6 +13,6 @@ method Script(
     Log.i("Restoring database from the last backup of %SourceDatabase to $InfobaseName")
     Sql.CreateDatabaseFromLastBackup(Server, SourceDatabase, User, Password, InfobaseName)
 
-    Log.i("Register infobase in the cluster")
+    Log.i("Register infobase $InfobaseName in the cluster")
     Ras.CreateInfobaseIfNotExists(InfobaseName, Server, User, Password, RasAddress, RasPort)
 ;
