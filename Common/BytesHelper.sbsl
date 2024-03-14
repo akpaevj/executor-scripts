@@ -1,9 +1,9 @@
 @Global
-method IndexOf(Data1: Bytes, Data2: Bytes): Number
+method IndexOf(Data1: Bytes, Data2: Bytes, Data1StartIndex = 0): Number
     var StartIndex = -1
     var Data2Index = 0
 
-    for Data1Index = 0 to Data1.Length() - 1
+    for Data1Index = Data1StartIndex to Data1.Length() - 1
         val Data1Char = Data1.GetRange(Data1Index, Data1Index + 1)
         val Data2Char = Data2.GetRange(Data2Index, Data2Index + 1)
 
