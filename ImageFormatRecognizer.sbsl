@@ -1,10 +1,9 @@
 #required Common/BytesHelper.sbsl
 #required Common/Log.sbsl
+#required Common/HttpHelper.sbsl
 
 method Script(URL: String)
-    val Request = HttpClient.GetRequest(URL)
-    val Response = Request.Execute()
-    val Data = Response.Body.ReadAsBytes()
+    val Data = HttpHelper.GetBytes(URL)
 
     if BytesHelper.StartsWith(Data, "42 4d")
         Log.i("BITMAP")

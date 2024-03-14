@@ -1,0 +1,65 @@
+@Global
+method Get(Url: String): HttpResponse
+    val Request = HttpClient.GetRequest(Url)
+    return Request.Execute()
+;
+
+@Global
+method GetBytes(Url: String): Bytes
+    val Request = HttpClient.GetRequest(Url)
+    use Stream = Request.Execute().Body
+    
+    return Stream.ReadAsBytes()
+;
+
+// using only with "use" operator 
+@Global
+method GetStream(Url: String): ReadableStream
+    val Request = HttpClient.GetRequest(Url)
+    return Request.Execute().Body
+;
+
+@Global
+method GetString(Url: String, Encoding = Encoding.Utf8): String
+    val Request = HttpClient.GetRequest(Url)
+    use Stream = Request.Execute().Body
+
+    return Stream.ReadAsString(Encoding)
+;
+
+@Global
+method Post(Url: String, Data: String): HttpResponse
+    val Request = HttpClient.PostRequest(Url)
+    Request.SetBody(Data)
+    
+    return Request.Execute()
+;
+
+@Global
+method Post(Url: String, Data: Bytes): HttpResponse
+    val Request = HttpClient.PostRequest(Url)
+
+    use InStream = new TemporaryWritableStream(Data.Size())
+    InStream.Write(Data)
+
+    use OutStream = InStream.OpenReadableStream()
+    Request.SetBody(OutStream)
+    
+    return Request.Execute()
+;
+
+@Global
+method Post(Url: String, Stream: ReadableStream): HttpResponse
+    val Request = HttpClient.PostRequest(Url)
+    Request.SetBody(Stream)
+    
+    return Request.Execute()
+;
+
+@Global
+method Post(Url: String, File: File): HttpResponse
+    val Request = HttpClient.PostRequest(Url)
+    Request.SetBody(File)
+    
+    return Request.Execute()
+;
