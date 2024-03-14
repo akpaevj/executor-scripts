@@ -28,38 +28,43 @@ method GetString(Url: String, Encoding = Encoding.Utf8): String
 ;
 
 @Global
-method Post(Url: String, Data: String): HttpResponse
+method Post(Url: String, Body: String | Bytes | ReadableStream | File): HttpResponse
     val Request = HttpClient.PostRequest(Url)
-    Request.SetBody(Data)
+    SetRequestBody(Request, Body)
     
     return Request.Execute()
 ;
 
 @Global
-method Post(Url: String, Data: Bytes): HttpResponse
-    val Request = HttpClient.PostRequest(Url)
-
-    use InStream = new TemporaryWritableStream(Data.Size())
-    InStream.Write(Data)
-
-    use OutStream = InStream.OpenReadableStream()
-    Request.SetBody(OutStream)
+method Put(Url: String, Body: String | Bytes | ReadableStream | File): HttpResponse
+    val Request = HttpClient.PutRequest(Url)
+    SetRequestBody(Request, Body)
     
     return Request.Execute()
 ;
 
 @Global
-method Post(Url: String, Stream: ReadableStream): HttpResponse
-    val Request = HttpClient.PostRequest(Url)
-    Request.SetBody(Stream)
+method Patch(Url: String, Body: String | Bytes | ReadableStream | File): HttpResponse
+    val Request = HttpClient.PatchRequest(Url)
+    SetRequestBody(Request, Body)
     
     return Request.Execute()
 ;
 
-@Global
-method Post(Url: String, File: File): HttpResponse
-    val Request = HttpClient.PostRequest(Url)
-    Request.SetBody(File)
-    
-    return Request.Execute()
+method SetRequestBody(Request: HttpRequest, Body: String | Bytes | ReadableStream | File)
+    if Body is String
+        Request.SetBody(Body as String)
+    else if Body is Bytes
+        val Data = Body as Bytes
+
+        use InStream = new TemporaryWritableStream(Data.Size())
+        InStream.Write(Data)
+
+        use OutStream = InStream.OpenReadableStream()
+        Request.SetBody(OutStream)
+    else if Body is ReadableStream
+        Request.SetBody(Body as ReadableStream)
+    else if Body is File
+        Request.SetBody(Body as File)
+    ;
 ;
