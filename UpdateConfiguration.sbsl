@@ -1,4 +1,4 @@
-#required Common/Log.sbsl
+#required Common/Logger.sbsl
 #required Common/V8Database.sbsl
 #required Common/Sql.sbsl
 #required Common/V8.sbsl
@@ -25,20 +25,20 @@ method Script(
         val CfuPath = Path.Join(TemplatesPath, RequiredVersion.Replace(".", "_"), "1cv8.cfu")
 
         if Path.Exists(CfuPath)
-            Log.i("Using CFU path: $CfuPath")
+            Logger.i("Using CFU path: $CfuPath")
         else
-            Log.e("Couldn't find CFU file of required version \"$RequiredVersion\" by path \"%CfuPath\"")
+            Logger.e("Couldn't find CFU file of required version \"$RequiredVersion\" by path \"%CfuPath\"")
         ;
 
-        Log.i("Blocking connections")
+        Logger.i("Blocking connections")
         Ras.BlockConnections(Infobase, User, Password, AccessCode)
 
-        Log.i("Updating configuration (%Server/%Infobase)")
+        Logger.i("Updating configuration (%Server/%Infobase)")
         BatchMode.UpdateConfiguration(Server, Infobase, User, Password, AccessCode, CfuPath, PlatformVersion)
 
-        Log.i("Unblocking connections")
+        Logger.i("Unblocking connections")
         Ras.UnblockConnections(Infobase, User, Password)
     else
-        Log.i("It doesn't need to update configuration (Current: ${ConfigInfo.Version}, Required: %RequiredVersion)")
+        Logger.i("It doesn't need to update configuration (Current: ${ConfigInfo.Version}, Required: %RequiredVersion)")
     ;
 ;

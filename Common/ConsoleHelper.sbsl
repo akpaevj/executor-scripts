@@ -1,0 +1,6 @@
+const ESC = "\u00027"
+
+@Global
+method SetColor(Text: String, ColorId: Number): String
+    return "%ESC[${ColorId}m${Text}%ESC[0m"
+;

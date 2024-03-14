@@ -1,3 +1,5 @@
+#required ConsoleHelper.sbsl
+
 enum LogLevel
     Trace,
     Debug,
@@ -29,12 +31,12 @@ method w(Message: String)
 ;
 
 @Global
-method e(Message: String, ThrowException = True)
+method e(Message: String, ThrowException = False)
     Log(LogLevel.Error, Message, ThrowException)
 ;
 
 @Global
-method c(Message: String, ThrowException = True)
+method c(Message: String, ThrowException = False)
     Log(LogLevel.Critical, Message, ThrowException)
 ;
 
@@ -47,13 +49,13 @@ method Log(Level: LogLevel, Message: String, ThrowException = False)
     when LogLevel.Debug
         LevelString = "DEBUG"
     when LogLevel.Information
-        LevelString = "INFO"
+        LevelString = ThrowException ? "INFO" : ConsoleHelper.SetColor("INFO", 32)
     when LogLevel.Warning
-        LevelString = "WARN"
+        LevelString = ThrowException ? "WARN" : ConsoleHelper.SetColor("WARN", 33)
     when LogLevel.Error
-        LevelString = "ERROR"
+        LevelString = ThrowException ? "ERROR" : ConsoleHelper.SetColor("ERROR", 31)
     when LogLevel.Critical
-        LevelString = "CRIT"
+        LevelString = ThrowException ? "CRIT" : ConsoleHelper.SetColor("CRIT", 41)
     ;
 
     val Content = "${DateTime.Now()} - %LevelString - %Message"

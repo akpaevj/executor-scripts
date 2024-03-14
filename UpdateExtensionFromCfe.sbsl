@@ -1,4 +1,4 @@
-#required Common/Log.sbsl
+#required Common/Logger.sbsl
 #required Common/V8Database.sbsl
 #required Common/Sql.sbsl
 #required Common/V8.sbsl
@@ -22,15 +22,15 @@ method Script(
     val Database = V8Database.NewInstance(Connection)
 
     if not Database.HasExtension(ExtensionName)
-        Log.e("Extension \"%ExtensionName\" is not connected to the infobase \"%Infobase\"")
+        Logger.e("Extension \"%ExtensionName\" is not connected to the infobase \"%Infobase\"")
     ;
 
-    Log.i("Blocking connections")
+    Logger.i("Blocking connections")
     Ras.BlockConnections(Infobase, User, Password, AccessCode)
 
-    Log.i("Updating extension (%Server/%Infobase/%ExtensionName)")
+    Logger.i("Updating extension (%Server/%Infobase/%ExtensionName)")
     BatchMode.UpdateExtension(Server, Infobase, User, Password, AccessCode, ExtensionName, ExtensionPath, PlatformVersion)
 
-    Log.i("Unblocking connections")
+    Logger.i("Unblocking connections")
     Ras.UnblockConnections(Infobase, User, Password)
 ;

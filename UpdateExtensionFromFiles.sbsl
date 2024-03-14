@@ -1,4 +1,4 @@
-#required Common/Log.sbsl
+#required Common/Logger.sbsl
 #required Common/V8Database.sbsl
 #required Common/Sql.sbsl
 #required Common/V8.sbsl
@@ -22,10 +22,10 @@ method Script(
     val Database = V8Database.NewInstance(Connection)
 
     if not Path.IsFile(ExtensionPath) and not Path.ExtensionIs(ExtensionPath, "zip")
-        Log.e("ExtensionPath parameter must be a path to the zip archive")
+        Logger.e("ExtensionPath parameter must be a path to the zip archive")
     ;
 
-    Log.i("Unpacking the extension archive")
+    Logger.i("Unpacking the extension archive")
     val ExtensionFolder = Files.CreateTempDirectory()
     Zip.ExtractToDirectory(ExtensionPath, ExtensionFolder.Path)
     ExtensionPath = ExtensionFolder.Path
@@ -33,33 +33,33 @@ method Script(
     val ConfigurationFilePath = Path.Join(ExtensionPath, "Configuration.xml")
 
     if not Path.Exists(ConfigurationFilePath)
-        Log.e("Couldn't find \"Configuration.xml\" file")
+        Logger.e("Couldn't find \"Configuration.xml\" file")
     ;
 
     val NewExtensionInfo = V8.ConfigInfoFromConfiguration(ConfigurationFilePath)
 
     if not Database.HasExtension(NewExtensionInfo.Name)
-        Log.e("Extension \"${NewExtensionInfo.Name}\" is not connected to the infobase \"%Infobase\"")
+        Logger.e("Extension \"${NewExtensionInfo.Name}\" is not connected to the infobase \"%Infobase\"")
     ;
 
     val ConfigInfo = Database.GetConfigInfo()
     var ExpectingConfigVersion = V8.ConfigurationVersionFromExtensionVersion(NewExtensionInfo.Version)
     if ConfigInfo.Version != ExpectingConfigVersion
-        Log.e("Extension version (%ExpectingConfigVersion) targets to other configuration version (${ConfigInfo.Version})")
+        Logger.e("Extension version (%ExpectingConfigVersion) targets to other configuration version (${ConfigInfo.Version})")
     ;
 
     val ConnectedExtensionInfo = Database.GetExtensionInfo(NewExtensionInfo.Name)
     if not V8.VersionIsUpper(ConnectedExtensionInfo.Version, NewExtensionInfo.Version)
-        Log.e("It doesn't need to update extension (Current: ${ConnectedExtensionInfo.Version}, New: ${NewExtensionInfo.Version})")
+        Logger.e("It doesn't need to update extension (Current: ${ConnectedExtensionInfo.Version}, New: ${NewExtensionInfo.Version})")
     ;
 
-    Log.i("Blocking connections")
+    Logger.i("Blocking connections")
     Ras.BlockConnections(Infobase, User, Password, AccessCode)
 
-    Log.i("Updating extension (%Server/%Infobase/${NewExtensionInfo.Name})")
+    Logger.i("Updating extension (%Server/%Infobase/${NewExtensionInfo.Name})")
     BatchMode.UpdateExtension(Server, Infobase, User, Password, AccessCode, NewExtensionInfo.Name, ExtensionPath, PlatformVersion)
 
-    Log.i("Unblocking connections")
+    Logger.i("Unblocking connections")
     Ras.UnblockConnections(Infobase, User, Password)
 
     return 0
