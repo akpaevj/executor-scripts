@@ -1,0 +1,22 @@
+#required Common/BytesHelper.sbsl
+#required Common/Log.sbsl
+
+method Script(URL: String)
+    val Request = HttpClient.GetRequest(URL)
+    val Response = Request.Execute()
+    val Data = Response.Body.ReadAsBytes()
+
+    if BytesHelper.StartsWith(Data, "42 4d")
+        Log.i("BITMAP")
+    else if BytesHelper.StartsWith(Data, "cc 10 0d 20") // RIFF
+        if BytesHelper.StartsWith(Data.GetRange(8), "52 49 46 46")
+            Log.i("WEBP")
+        else
+            Log.e("Failed to recognize image format")
+        ;
+    else if BytesHelper.StartsWith(Data, "ff d8 ff e0")
+        Log.i("JPG")
+    else
+        Log.e("Failed to recognize image format")
+    ;
+;

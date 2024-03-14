@@ -40,7 +40,20 @@ method StartsWith(Data1: Bytes, Data2: Bytes): Boolean
 ;
 
 @Global
+method StartsWith(Data1: Bytes, HexString: String): Boolean
+    return IndexOf(Data1, new Bytes(HexString.Replace(" ", ""))) == 0
+;
+
+
+@Global
 method EndsWith(Data1: Bytes, Data2: Bytes): Boolean
+    val Index = IndexOf(Data1, Data2) 
+    return Index + Data2.Length() == Data1.Length()
+;
+
+@Global
+method EndsWith(Data1: Bytes, HexString: String): Boolean
+    val Data2 = new Bytes(HexString.Replace(" ", ""))
     val Index = IndexOf(Data1, Data2) 
     return Index + Data2.Length() == Data1.Length()
 ;
