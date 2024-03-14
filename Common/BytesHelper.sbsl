@@ -11,7 +11,7 @@ method IndexOf(Data1: Bytes, Data2: Bytes): Number
             // doesn't match pattern
             StartIndex = -1
             Data2Index = 0
-            continue
+            break
         ;
 
         if Data1Char == Data2Char
